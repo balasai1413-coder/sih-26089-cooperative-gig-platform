@@ -1,0 +1,350 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  WORKER
+  COOPERATIVE_ADMIN
+}
+
+enum CooperativeMembershipRole {
+  MEMBER
+  ADMIN
+}
+
+enum SkillVerificationStatus {
+  NOT_VERIFIED
+  ASSESSMENT_PENDING
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum SkillProficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum WorkerAvailability {
+  AVAILABLE
+  LIMITED
+  UNAVAILABLE
+}
+
+enum VerificationMethod {
+  PRACTICAL_ASSESSMENT
+  EXPERIENCE_EVIDENCE
+  CERTIFICATE_EVIDENCE
+  ADMIN_REVIEW
+}
+
+enum SkillEvidenceType {
+  PRACTICAL_EXPERIENCE
+  WORK_SAMPLE
+  ASSESSMENT
+  TRAINING
+  CERTIFICATE
+  EMPLOYER_OR_CLIENT
+  OTHER
+}
+
+enum CertificateStatus {
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+enum CooperativeStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ServiceRequestStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING_WORKER_ACCEPTANCE
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id                       String              @id @default(uuid()) @db.Uuid
+  mobile                   String              @unique @db.VarChar(16)
+  email                    String?             @unique @db.VarChar(254)
+  passwordHash             String              @db.VarChar(255)
+  refreshTokenHash         String?             @db.VarChar(255)
+  role                     UserRole
+  isActive                 Boolean             @default(true)
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+  customer                 Customer?
+  worker                   Worker?
+  administeredCooperatives Cooperative[]       @relation("CooperativeAdministrators")
+  verifiedWorkerSkills     WorkerSkill[]       @relation("WorkerSkillVerifiedBy")
+  skillVerifications       SkillVerification[] @relation("SkillVerifiedBy")
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model Customer {
+  id              String           @id @default(uuid()) @db.Uuid
+  userId          String           @unique @db.Uuid
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceRequests ServiceRequest[]
+  bookings        Booking[]
+}
+
+model Worker {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  userId                 String                  @unique @db.Uuid
+  fullName               String?                 @db.VarChar(160)
+  profilePhotoUrl        String?                 @db.VarChar(2048)
+  bio                    String?                 @db.VarChar(1200)
+  location               String?                 @db.VarChar(240)
+  educationQualification String?                 @db.VarChar(200)
+  educationInstitution   String?                 @db.VarChar(240)
+  educationYear          Int?
+  yearsExperience        Int?
+  availability           WorkerAvailability?
+  languages              String[]                @default([])
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memberships            CooperativeMembership[]
+  skills                 WorkerSkill[]
+  experiences            WorkerExperience[]
+  verificationRequests   SkillVerification[]     @relation("SkillVerificationRequestedBy")
+  bookings               Booking[]
+}
+
+model Cooperative {
+  id             String                  @id @default(uuid()) @db.Uuid
+  name           String                  @db.VarChar(160)
+  registrationNo String?                 @unique @db.VarChar(100)
+  description    String?                 @db.VarChar(1000)
+  location       String?                 @db.VarChar(240)
+  operatingArea  String?                 @db.VarChar(240)
+  contactEmail   String?                 @db.VarChar(254)
+  contactPhone   String?                 @db.VarChar(16)
+  status         CooperativeStatus       @default(ACTIVE)
+  adminUserId    String?                 @db.Uuid
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  admin          User?                   @relation("CooperativeAdministrators", fields: [adminUserId], references: [id], onDelete: SetNull)
+  memberships    CooperativeMembership[]
+
+  @@index([adminUserId])
+  @@index([status])
+}
+
+model CooperativeMembership {
+  id            String                    @id @default(uuid()) @db.Uuid
+  cooperativeId String                    @db.Uuid
+  workerId      String                    @db.Uuid
+  role          CooperativeMembershipRole @default(MEMBER)
+  joinedAt      DateTime                  @default(now())
+  leftAt        DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  cooperative   Cooperative               @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  worker        Worker                    @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@unique([cooperativeId, workerId])
+  @@index([workerId])
+  @@index([cooperativeId, role])
+}
+
+model SkillCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(120)
+  description String?  @db.VarChar(500)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  skills      Skill[]
+}
+
+model Skill {
+  id              String           @id @default(uuid()) @db.Uuid
+  name            String           @unique @db.VarChar(120)
+  description     String?          @db.VarChar(500)
+  categoryId      String?          @db.Uuid
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  category        SkillCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  workerSkills    WorkerSkill[]
+  serviceRequests ServiceRequest[]
+
+  @@index([categoryId])
+  @@index([active])
+}
+
+model WorkerSkill {
+  id                      String                  @id @default(uuid()) @db.Uuid
+  workerId                String                  @db.Uuid
+  skillId                 String                  @db.Uuid
+  proficiency             SkillProficiency        @default(INTERMEDIATE)
+  experienceYears         Int                     @default(0)
+  experienceSummary       String?                 @db.VarChar(1000)
+  evidenceReference       String?                 @db.VarChar(2048)
+  verificationStatus      SkillVerificationStatus @default(NOT_VERIFIED)
+  verificationRequestedAt DateTime?
+  verifiedAt              DateTime?
+  verifiedByUserId        String?                 @db.Uuid
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  worker                  Worker                  @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  skill                   Skill                   @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  verifiedBy              User?                   @relation("WorkerSkillVerifiedBy", fields: [verifiedByUserId], references: [id], onDelete: SetNull)
+  certificates            Certificate[]
+  evidence                SkillEvidence[]
+  verifications           SkillVerification[]
+
+  @@unique([workerId, skillId])
+  @@index([verificationStatus])
+  @@index([verifiedByUserId])
+}
+
+model WorkerExperience {
+  id             String          @id @default(uuid()) @db.Uuid
+  workerId       String          @db.Uuid
+  title          String          @db.VarChar(160)
+  organization   String?         @db.VarChar(200)
+  startDate      DateTime?
+  endDate        DateTime?
+  isCurrent      Boolean         @default(false)
+  description    String?         @db.VarChar(1200)
+  relevantSkills String[]        @default([])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  worker         Worker          @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  evidence       SkillEvidence[]
+
+  @@index([workerId, startDate])
+}
+
+model SkillEvidence {
+  id            String            @id @default(uuid()) @db.Uuid
+  workerSkillId String            @db.Uuid
+  experienceId  String?           @db.Uuid
+  type          SkillEvidenceType
+  description   String            @db.VarChar(1200)
+  referenceUrl  String?           @db.VarChar(2048)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  workerSkill   WorkerSkill       @relation(fields: [workerSkillId], references: [id], onDelete: Cascade)
+  experience    WorkerExperience? @relation(fields: [experienceId], references: [id], onDelete: SetNull)
+
+  @@index([workerSkillId, createdAt])
+  @@index([experienceId])
+}
+
+model SkillVerification {
+  id                  String                  @id @default(uuid()) @db.Uuid
+  workerSkillId       String                  @db.Uuid
+  requestedByWorkerId String?                 @db.Uuid
+  verifiedById        String?                 @db.Uuid
+  method              VerificationMethod?
+  status              SkillVerificationStatus @default(PENDING)
+  notes               String?                 @db.VarChar(1000)
+  evidenceReference   String?                 @db.VarChar(2048)
+  assessmentReference String?                 @db.VarChar(2048)
+  requestedAt         DateTime                @default(now())
+  reviewedAt          DateTime?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  workerSkill         WorkerSkill             @relation(fields: [workerSkillId], references: [id], onDelete: Cascade)
+  requestedByWorker   Worker?                 @relation("SkillVerificationRequestedBy", fields: [requestedByWorkerId], references: [id], onDelete: SetNull)
+  verifiedBy          User?                   @relation("SkillVerifiedBy", fields: [verifiedById], references: [id], onDelete: Restrict)
+
+  @@index([workerSkillId, createdAt])
+  @@index([workerSkillId, status])
+  @@index([requestedByWorkerId, status])
+  @@index([verifiedById])
+}
+
+model Certificate {
+  id            String            @id @default(uuid()) @db.Uuid
+  workerSkillId String            @db.Uuid
+  title         String            @db.VarChar(200)
+  issuer        String?           @db.VarChar(200)
+  referenceNo   String?           @db.VarChar(150)
+  documentUrl   String?           @db.VarChar(2048)
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  status        CertificateStatus @default(SUBMITTED)
+  submittedAt   DateTime          @default(now())
+  reviewedAt    DateTime?
+  reviewNotes   String?           @db.VarChar(1000)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  workerSkill   WorkerSkill       @relation(fields: [workerSkillId], references: [id], onDelete: Cascade)
+
+  @@index([workerSkillId, status])
+  @@index([status])
+}
+
+model ServiceRequest {
+  id                String               @id @default(uuid()) @db.Uuid
+  customerId        String               @db.Uuid
+  skillId           String?              @db.Uuid
+  title             String               @db.VarChar(200)
+  description       String?              @db.VarChar(2000)
+  status            ServiceRequestStatus @default(OPEN)
+  location          String?              @db.VarChar(300)
+  preferredDateTime DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  customer          Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  skill             Skill?               @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  bookings          Booking[]
+
+  @@index([customerId])
+  @@index([customerId, createdAt])
+  @@index([status])
+}
+
+model Booking {
+  id               String        @id @default(uuid()) @db.Uuid
+  serviceRequestId String        @db.Uuid
+  customerId       String        @db.Uuid
+  workerId         String        @db.Uuid
+  status           BookingStatus @default(PENDING_WORKER_ACCEPTANCE)
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  cancelledAt      DateTime?
+  customerNotes    String?       @db.VarChar(1000)
+  workerNotes      String?       @db.VarChar(1000)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  customer         Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  worker           Worker         @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([workerId])
+  @@index([serviceRequestId])
+  @@index([status])
+}

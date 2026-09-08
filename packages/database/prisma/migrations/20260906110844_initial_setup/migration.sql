@@ -1,0 +1,7 @@
+-- Intentionally empty baseline migration.
+--
+-- The previous contents attempted to alter tables that are created only by the
+-- subsequent authentication foundation migration. On a new PostgreSQL
+-- database, that ordering made `prisma migrate deploy` fail before any schema
+-- could be created. UUID defaults are correctly declared in the following
+-- migration and in the Prisma schema.

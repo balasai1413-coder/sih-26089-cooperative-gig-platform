@@ -1,0 +1,38 @@
+{
+  "name": "sih-26089-cooperative-gig-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Foundation for SIH Problem ID 26089 cooperative gig services platform.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev:web": "npm run dev --workspace=@sih/web",
+    "dev:api": "npm run start:dev --workspace=@sih/api",
+    "build": "npm run build --workspace=@sih/shared && npm run build --workspace=@sih/contracts && npm run build --workspace=@sih/database && npm run build --workspace=@sih/api && npm run build --workspace=@sih/web",
+    "typecheck": "npm run typecheck --workspace=@sih/shared && npm run typecheck --workspace=@sih/contracts && npm run typecheck --workspace=@sih/database && npm run typecheck --workspace=@sih/api && npm run typecheck --workspace=@sih/web",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prisma:generate": "npm run prisma:generate --workspace=@sih/database",
+    "prisma:migrate": "npm run prisma:migrate --workspace=@sih/database",
+    "postinstall": "npm run prisma:generate"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.20.0",
+    "@types/jest": "30.0.0",
+    "eslint": "^9.20.0",
+    "eslint-config-next": "^15.2.0",
+    "eslint-config-prettier": "^10.0.1",
+    "globals": "^15.15.0",
+    "prettier": "^3.5.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0"
+  }
+}
