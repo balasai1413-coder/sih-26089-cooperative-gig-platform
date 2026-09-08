@@ -1,8 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "./src",
     "declaration": false,
     "declarationMap": false,
     "emitDecoratorMetadata": true,
@@ -10,8 +11,14 @@
     "allowSyntheticDefaultImports": true,
     "incremental": true,
     "outDir": "./dist",
-    "baseUrl": "./"
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*.ts", "src/**/*.spec.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.spec.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
