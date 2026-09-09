@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { CooperativesModule } from './cooperatives/cooperatives.module';
 import { HealthController } from './health.controller';
 import { MatchingModule } from './matching/matching.module';
+import { ReviewsModule } from './reviews/reviews.module';
 import { ServiceRequestsModule } from './service-requests/service-requests.module';
 import { SkillsModule } from './skills/skills.module';
 import { WorkersModule } from './workers/workers.module';
@@ -19,6 +20,7 @@ import { PaymentsModule } from './payments/payments.module';
     CooperativesModule,
     MatchingModule,
     PaymentsModule,
+    ReviewsModule,
     ServiceRequestsModule,
     SkillsModule,
     WorkersModule,

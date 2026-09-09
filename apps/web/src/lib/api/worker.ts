@@ -174,4 +174,7 @@ export const workerApi = {
       `/workers/me/bookings/${bookingId}/complete`,
       withToken(accessToken, 'POST', workerNotes ? { workerNotes } : {}),
     ),
+  /** Step 10 — list reviews about the worker. */
+  reviews: (accessToken: string) =>
+    apiRequest<import('@/types/review').Review[]>('/workers/me/reviews', withToken(accessToken)),
 };

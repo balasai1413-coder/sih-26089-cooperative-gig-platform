@@ -128,6 +128,9 @@ model Customer {
   bookings        Booking[]
   payments        Payment[]
   invoices        Invoice[]
+  reviewsGiven    Review[]
+
+  @@index([userId])
 }
 
 model Worker {
@@ -153,6 +156,9 @@ model Worker {
   bookings               Booking[]
   payments               Payment[]
   invoices               Invoice[]
+  reviewsReceived        Review[]
+
+  @@index([userId])
 }
 
 model Cooperative {
@@ -349,8 +355,6 @@ model Booking {
   customerId       String        @db.Uuid
   workerId         String        @db.Uuid
   status           BookingStatus @default(PENDING_WORKER_ACCEPTANCE)
-  // Server-determined service price in integer minor units (Step 9). Set by the
-  // platform (trusted server-side data). Payments never accept a client amount.
   priceAmount      Int?          @db.Integer
   scheduledAt      DateTime?
   startedAt        DateTime?
@@ -365,12 +369,33 @@ model Booking {
   worker           Worker         @relation(fields: [workerId], references: [id], onDelete: Cascade)
   payments         Payment[]
   invoices         Invoice[]
+  review           Review?
 
   @@index([customerId])
   @@index([workerId])
   @@index([serviceRequestId])
   @@index([status])
 }
+
+model Review {
+  id        String    @id @default(uuid()) @db.Uuid
+  bookingId String    @unique @db.Uuid
+  customerId String   @db.Uuid
+  workerId  String    @db.Uuid
+  rating    Int
+  comment   String?   @db.VarChar(1000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer  Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  worker    Worker    @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId])
+  @@index([customerId])
+  @@map("review")
+}
+
 model Payment {
   id                String        @id @default(uuid()) @db.Uuid
   bookingId         String        @db.Uuid
@@ -389,12 +414,11 @@ model Payment {
   failedAt          DateTime?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-  invoiceId         String?       @db.Uuid @unique
+  invoiceId         String?       @unique @db.Uuid
+  booking           Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer          Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  worker            Worker        @relation(fields: [workerId], references: [id], onDelete: Cascade)
   invoice           Invoice?      @relation(fields: [invoiceId], references: [id])
-
-  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  customer  Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  worker    Worker    @relation(fields: [workerId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
   @@index([customerId])
@@ -402,6 +426,7 @@ model Payment {
   @@index([status])
   @@index([providerOrderId])
 }
+
 model Invoice {
   id            String        @id @default(uuid()) @db.Uuid
   invoiceNumber String        @unique
@@ -417,11 +442,10 @@ model Invoice {
   paidAt        DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-
-  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  payment   Payment?
+  booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  worker        Worker        @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  payment       Payment?
 
   @@index([bookingId])
   @@index([customerId])

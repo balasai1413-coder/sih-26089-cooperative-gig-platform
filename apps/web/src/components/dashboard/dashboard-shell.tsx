@@ -17,6 +17,7 @@ import { CustomerBookings } from '@/components/customer/customer-bookings';
 import { CustomerPayments } from '@/components/customer/customer-payments';
 import { WorkerAssignments } from '@/components/worker/worker-assignments';
 import { WorkerPayments } from '@/components/worker/worker-payments';
+import { WorkerReviews } from '@/components/worker/worker-reviews';
 import {
   WorkerProfileStudio,
   type WorkerStudioSection,
@@ -70,8 +71,8 @@ const configs: Record<
     nav: [
       { label: 'Profile', icon: 'user' },
       { label: 'Assignments', icon: 'briefcase' },
+      { label: 'Reviews', icon: 'sparkles' },
       { label: 'Payments', icon: 'verify' },
-      { label: 'Payments', icon: 'sparkles' },
       { label: 'Skills', icon: 'zap' },
       { label: 'Evidence', icon: 'shield' },
       { label: 'Certificates', icon: 'verify' },
@@ -251,6 +252,7 @@ function DashboardView({
   userName: string;
 }) {
   if (kind === 'worker' && active === 'Assignments') return <WorkerAssignments />;
+  if (kind === 'worker' && active === 'Reviews') return <WorkerReviews />;
   if (kind === 'worker' && active === 'Payments') return <WorkerPayments />;
   if (kind === 'worker') return <WorkerProfileStudio active={active as WorkerStudioSection} />;
   if (kind === 'customer' && active === 'My requests') return <CustomerRequests />;

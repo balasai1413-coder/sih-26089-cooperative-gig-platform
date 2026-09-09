@@ -3,9 +3,11 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma, SkillVerificationStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
+import { ReviewsService } from '../reviews/reviews.service';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { AddCertificateDto, UpdateCertificateDto } from './dto/certificate.dto';
 import { CreateWorkerExperienceDto, UpdateWorkerExperienceDto } from './dto/worker-experience.dto';
@@ -54,14 +56,17 @@ type EvidenceWithDetails = Prisma.SkillEvidenceGetPayload<{ include: typeof evid
 
 @Injectable()
 export class WorkersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly reviewsService?: ReviewsService,
+  ) {}
 
   async getMyProfile(actor: AuthenticatedUser) {
     return this.toProfile(await this.findWorkerProfile(actor.id));
   }
 
   async updateMyProfile(actor: AuthenticatedUser, dto: UpdateWorkerProfileDto) {
-    const worker = await this.prisma.worker.update({
+    await this.prisma.worker.update({
       where: { userId: actor.id },
       data: {
         ...(dto.fullName !== undefined ? { fullName: dto.fullName } : {}),
@@ -81,7 +86,7 @@ export class WorkersService {
       },
       include: profileInclude,
     });
-    return this.toProfile(worker);
+    return this.toProfile(await this.findWorkerProfile(actor.id));
   }
 
   async listMySkills(actor: AuthenticatedUser) {
@@ -333,7 +338,17 @@ export class WorkersService {
       include: profileInclude,
     });
     if (!worker) throw new NotFoundException('Worker profile is not available');
-    return worker;
+    let reputation;
+    if (this.reviewsService) {
+      reputation = await this.reviewsService.getWorkerReputation(userId);
+    } else {
+      reputation = {
+        averageRating: null,
+        totalReviews: 0,
+        ratingDistribution: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 },
+      };
+    }
+    return { worker, reputation };
   }
 
   private async findWorker(userId: string) {
@@ -345,7 +360,8 @@ export class WorkersService {
     return worker;
   }
 
-  private toProfile(worker: Awaited<ReturnType<WorkersService['findWorkerProfile']>>) {
+  private toProfile(input: { worker: Awaited<ReturnType<WorkersService['findWorkerProfile']>>['worker']; reputation: Awaited<ReturnType<WorkersService['findWorkerProfile']>>['reputation'] }) {
+    const { worker, reputation } = input;
     const completionFields = [
       Boolean(worker.fullName),
       Boolean(worker.profilePhotoUrl),
@@ -378,6 +394,7 @@ export class WorkersService {
       profileCompletion: Math.round(
         (completionFields.filter(Boolean).length / completionFields.length) * 100,
       ),
+      reputation,
     };
   }
 

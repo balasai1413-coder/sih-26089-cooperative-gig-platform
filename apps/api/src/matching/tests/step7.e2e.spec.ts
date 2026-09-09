@@ -25,6 +25,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { WorkerDiscoveryController } from '../matching.controller';
 import { WorkerMatchingService } from '../matching.service';
 import { PROXIMITY_THRESHOLD_KM } from '../utils/coordinate.utils';
+import { ReviewsService } from '../../reviews/reviews.service';
 
 /**
  * Step 7 end-to-end tests run against the real PostgreSQL database.
@@ -88,7 +89,7 @@ describe('WorkerDiscoveryController (Step 7, real database)', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AuthModule, JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
       controllers: [WorkerDiscoveryController],
-      providers: [WorkerMatchingService],
+      providers: [WorkerMatchingService, PrismaService, ReviewsService],
     }).compile();
 
     app = moduleRef.createNestApplication();

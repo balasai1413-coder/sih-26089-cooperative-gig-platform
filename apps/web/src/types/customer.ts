@@ -61,4 +61,15 @@ export interface PublicWorkerProfile {
     experienceSummary: string | null;
   }[];
   cooperatives: { id: string; name: string }[];
+  reputation: {
+    averageRating: number | null;
+    totalReviews: number;
+    ratingDistribution: {
+      '1': number;
+      '2': number;
+      '3': number;
+      '4': number;
+      '5': number;
+    };
+  };
 }

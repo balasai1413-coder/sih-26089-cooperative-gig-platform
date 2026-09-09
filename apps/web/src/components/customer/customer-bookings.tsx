@@ -33,6 +33,33 @@ function formatDate(value: string | null) {
   });
 }
 
+function StarRating({ value, onChange, readonly }: { value: number; onChange?: (v: number) => void; readonly?: boolean }) {
+  return (
+    <div style={{ display: 'flex', gap: '0.25rem' }}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          disabled={readonly}
+          onClick={() => onChange?.(star)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: readonly ? 'default' : 'pointer',
+            fontSize: '1.5rem',
+            color: star <= value ? '#f59e0b' : '#d1d5db',
+            padding: 0,
+            lineHeight: 1,
+          }}
+          aria-label={`${star} star${star > 1 ? 's' : ''}`}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function CustomerBookings() {
   const { accessToken } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -42,6 +69,12 @@ export function CustomerBookings() {
   const [cancellingBooking, setCancellingBooking] = useState<Booking | null>(null);
   const [cancelNotes, setCancelNotes] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Review state
+  const [reviewingBooking, setReviewingBooking] = useState<Booking | null>(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewBusy, setReviewBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!accessToken) return;
@@ -78,6 +111,39 @@ export function CustomerBookings() {
       setError(friendlyError(err));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleSubmitReview() {
+    if (!accessToken || !reviewingBooking || reviewRating === 0) return;
+    setReviewBusy(true);
+    try {
+      const updated = await customerApi.createReview(accessToken, reviewingBooking.id, {
+        rating: reviewRating,
+        comment: reviewComment || undefined,
+      });
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === updated.bookingId
+            ? {
+                ...b,
+                review: {
+                  id: updated.id,
+                  rating: updated.rating,
+                  comment: updated.comment,
+                },
+              }
+            : b,
+        ),
+      );
+      setReviewingBooking(null);
+      setReviewRating(0);
+      setReviewComment('');
+      setNotice('Review submitted. Thank you!');
+    } catch (err) {
+      setError(friendlyError(err));
+    } finally {
+      setReviewBusy(false);
     }
   }
 
@@ -157,6 +223,8 @@ export function CustomerBookings() {
           {bookings.map((booking) => {
             const canCancel =
               booking.status === 'PENDING_WORKER_ACCEPTANCE' || booking.status === 'ACCEPTED';
+            const isCompleted = booking.status === 'COMPLETED';
+            const hasReview = Boolean(booking.review);
 
             return (
               <GlassCard key={booking.id} className="member-card" role="listitem">
@@ -200,6 +268,33 @@ export function CustomerBookings() {
                   <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                     <em>Worker notes:</em> {booking.workerNotes}
                   </p>
+                ) : null}
+
+                {hasReview ? (
+                  <div
+                    style={{
+                      marginTop: '0.75rem',
+                      padding: '0.75rem',
+                      background: 'var(--surface-muted)',
+                      borderRadius: '0.5rem',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <StarRating value={booking.review!.rating} readonly />
+                      <span style={{ fontWeight: 600 }}>{booking.review!.rating}.0</span>
+                    </div>
+                    {booking.review!.comment ? (
+                      <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        &ldquo;{booking.review!.comment}&rdquo;
+                      </p>
+                    ) : null}
+                  </div>
+                ) : isCompleted ? (
+                  <div className="member-card__actions" style={{ marginTop: '0.75rem' }}>
+                    <Button size="sm" onClick={() => setReviewingBooking(booking)}>
+                      Rate & Review
+                    </Button>
+                  </div>
                 ) : null}
 
                 {canCancel ? (
@@ -246,6 +341,66 @@ export function CustomerBookings() {
               </SecondaryButton>
               <Button disabled={busy} onClick={() => void handleCancelBooking()}>
                 {busy ? 'Cancelling...' : 'Confirm Cancellation'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
+
+      {reviewingBooking ? (
+        <Modal
+          open={Boolean(reviewingBooking)}
+          title="Rate & Review"
+          onClose={() => {
+            setReviewingBooking(null);
+            setReviewRating(0);
+            setReviewComment('');
+          }}
+        >
+          <div className="studio-form">
+            <p>
+              How was your experience with <strong>{reviewingBooking.worker.fullName ?? 'Worker'}</strong>?
+            </p>
+
+            <label className="field" style={{ marginTop: '1rem' }}>
+              <span className="field__label">Rating</span>
+              <div style={{ marginTop: '0.5rem' }}>
+                <StarRating value={reviewRating} onChange={setReviewRating} />
+              </div>
+              {reviewRating === 0 ? (
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Select a rating from 1 to 5
+                </span>
+              ) : null}
+            </label>
+
+            <label className="field" style={{ marginTop: '1rem' }}>
+              <span className="field__label">Comment (optional)</span>
+              <textarea
+                className="field__control textarea-control"
+                rows={3}
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Share details about your experience..."
+                maxLength={1000}
+              />
+            </label>
+
+            <div className="studio-form__actions" style={{ marginTop: '1.5rem' }}>
+              <SecondaryButton
+                onClick={() => {
+                  setReviewingBooking(null);
+                  setReviewRating(0);
+                  setReviewComment('');
+                }}
+              >
+                Cancel
+              </SecondaryButton>
+              <Button
+                disabled={reviewBusy || reviewRating === 0}
+                onClick={() => void handleSubmitReview()}
+              >
+                {reviewBusy ? 'Submitting...' : 'Submit Review'}
               </Button>
             </div>
           </div>

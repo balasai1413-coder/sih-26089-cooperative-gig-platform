@@ -86,6 +86,24 @@ export const customerApi = {
       `/customers/me/bookings/${bookingId}/cancel`,
       withToken(accessToken, 'POST', customerNotes ? { customerNotes } : {}),
     ),
+  /** Step 10 — create review for completed booking. */
+  createReview: (accessToken: string, bookingId: string, payload: { rating: number; comment?: string | null }) =>
+    apiRequest<import('@/types/review').Review>(
+      `/customers/me/bookings/${bookingId}/review`,
+      withToken(accessToken, 'POST', payload),
+    ),
+  /** Step 10 — list customer reviews. */
+  myReviews: (accessToken: string) =>
+    apiRequest<import('@/types/review').Review[]>(
+      '/customers/me/reviews',
+      withToken(accessToken),
+    ),
+  /** Step 10 — get single customer review. */
+  myReview: (accessToken: string, reviewId: string) =>
+    apiRequest<import('@/types/review').Review>(
+      `/customers/me/reviews/${reviewId}`,
+      withToken(accessToken),
+    ),
 };
 
 /** Step 7 — public worker profile shape returned by the backend. */

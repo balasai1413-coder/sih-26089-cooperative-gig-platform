@@ -34,6 +34,11 @@ export interface Booking {
   customer: {
     id: string;
   };
+  review: {
+    id: string;
+    rating: number;
+    comment: string | null;
+  } | null;
 }
 
 export interface CreateBookingPayload {

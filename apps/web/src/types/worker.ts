@@ -31,6 +31,17 @@ export interface WorkerProfile {
   skillCount: number;
   experienceCount: number;
   profileCompletion: number;
+  reputation: {
+    averageRating: number | null;
+    totalReviews: number;
+    ratingDistribution: {
+      '1': number;
+      '2': number;
+      '3': number;
+      '4': number;
+      '5': number;
+    };
+  };
 }
 
 export interface SkillCatalogItem {

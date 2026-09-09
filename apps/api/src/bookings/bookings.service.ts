@@ -70,6 +70,13 @@ const bookingInclude = {
       userId: true,
     },
   },
+  review: {
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+    },
+  },
 } satisfies Prisma.BookingInclude;
 
 type BookingWithRelations = Prisma.BookingGetPayload<{ include: typeof bookingInclude }>;
@@ -153,6 +160,13 @@ export class BookingsService {
       customer: {
         id: booking.customer.id,
       },
+      review: booking.review
+        ? {
+            id: booking.review.id,
+            rating: booking.review.rating,
+            comment: booking.review.comment,
+          }
+        : null,
     };
   }
 

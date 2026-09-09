@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ServiceRequestStatus, SkillVerificationStatus, WorkerAvailability } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
+import { ReviewsService } from '../reviews/reviews.service';
 import { AuthenticatedUser } from '../auth/auth.types';
 import {
   haversineDistanceKm,
@@ -46,7 +47,10 @@ export interface ComputedMatch {
  */
 @Injectable()
 export class WorkerMatchingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reviewsService: ReviewsService,
+  ) {}
 
   private async resolveCustomerId(user: AuthenticatedUser): Promise<string> {
     const customer = await this.prisma.customer.findUnique({
@@ -226,6 +230,8 @@ export class WorkerMatchingService {
       worker.languages.length > 0,
     ];
 
+    const reputation = await this.reviewsService.getWorkerReputation(workerUserId);
+
     return {
       fullName: worker.fullName,
       profilePhotoUrl: worker.profilePhotoUrl,
@@ -245,6 +251,7 @@ export class WorkerMatchingService {
         experienceSummary: ws.experienceSummary,
       })),
       cooperatives: memberships.map((m) => ({ id: m.cooperative.id, name: m.cooperative.name })),
+      reputation,
     };
   }
 
