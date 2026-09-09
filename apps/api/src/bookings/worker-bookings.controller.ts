@@ -4,10 +4,7 @@ import { Authorize } from '../auth/decorators/authorize.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { BookingsService } from './bookings.service';
-import {
-  WorkerCompleteBookingDto,
-  WorkerRejectBookingDto,
-} from './dto/booking-action.dto';
+import { WorkerCompleteBookingDto, WorkerRejectBookingDto } from './dto/booking-action.dto';
 
 @Controller('workers/me')
 @Authorize({ roles: [UserRole.WORKER] })
@@ -61,4 +58,3 @@ export class WorkerBookingsController {
     return this.bookingsService.completeBooking(user, bookingId, dto);
   }
 }
-

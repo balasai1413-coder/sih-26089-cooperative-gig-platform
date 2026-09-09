@@ -43,4 +43,3 @@ export class CustomerBookingsController {
     return this.bookingsService.cancelBooking(user, bookingId, dto);
   }
 }
-

@@ -9,6 +9,7 @@ import { SkillsModule } from './skills/skills.module';
 import { WorkersModule } from './workers/workers.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { VerificationModule } from './verification/verification.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { VerificationModule } from './verification/verification.module';
     BookingsModule,
     CooperativesModule,
     MatchingModule,
+    PaymentsModule,
     ServiceRequestsModule,
     SkillsModule,
     WorkersModule,

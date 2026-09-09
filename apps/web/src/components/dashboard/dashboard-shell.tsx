@@ -14,7 +14,9 @@ import { CooperativeSkillCatalog } from '@/components/cooperative/cooperative-sk
 import { CooperativeVerificationStudio } from '@/components/cooperative/cooperative-verification-studio';
 import { CustomerRequests } from '@/components/customer/customer-requests';
 import { CustomerBookings } from '@/components/customer/customer-bookings';
+import { CustomerPayments } from '@/components/customer/customer-payments';
 import { WorkerAssignments } from '@/components/worker/worker-assignments';
+import { WorkerPayments } from '@/components/worker/worker-payments';
 import {
   WorkerProfileStudio,
   type WorkerStudioSection,
@@ -54,6 +56,7 @@ const configs: Record<
       { label: 'Discover', icon: 'compass' },
       { label: 'My requests', icon: 'briefcase' },
       { label: 'Bookings', icon: 'verify' },
+      { label: 'Payments', icon: 'sparkles' },
       { label: 'Notifications', icon: 'message' },
       { label: 'Profile', icon: 'user' },
     ],
@@ -67,6 +70,8 @@ const configs: Record<
     nav: [
       { label: 'Profile', icon: 'user' },
       { label: 'Assignments', icon: 'briefcase' },
+      { label: 'Payments', icon: 'verify' },
+      { label: 'Payments', icon: 'sparkles' },
       { label: 'Skills', icon: 'zap' },
       { label: 'Evidence', icon: 'shield' },
       { label: 'Certificates', icon: 'verify' },
@@ -246,9 +251,11 @@ function DashboardView({
   userName: string;
 }) {
   if (kind === 'worker' && active === 'Assignments') return <WorkerAssignments />;
+  if (kind === 'worker' && active === 'Payments') return <WorkerPayments />;
   if (kind === 'worker') return <WorkerProfileStudio active={active as WorkerStudioSection} />;
   if (kind === 'customer' && active === 'My requests') return <CustomerRequests />;
   if (kind === 'customer' && active === 'Bookings') return <CustomerBookings />;
+  if (kind === 'customer' && active === 'Payments') return <CustomerPayments />;
   if (kind === 'cooperative' && active === 'Verification') return <CooperativeVerificationStudio />;
   if (kind === 'cooperative' && active === 'Overview') return <CooperativeOverview />;
   if (kind === 'cooperative' && active === 'Workers') return <CooperativeMembers />;

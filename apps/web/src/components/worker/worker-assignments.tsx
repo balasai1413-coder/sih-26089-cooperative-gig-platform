@@ -155,9 +155,7 @@ export function WorkerAssignments() {
     );
   }
 
-  const pendingCount = assignments.filter(
-    (b) => b.status === 'PENDING_WORKER_ACCEPTANCE',
-  ).length;
+  const pendingCount = assignments.filter((b) => b.status === 'PENDING_WORKER_ACCEPTANCE').length;
   const inProgressCount = assignments.filter((b) => b.status === 'IN_PROGRESS').length;
   const completedCount = assignments.filter((b) => b.status === 'COMPLETED').length;
 
@@ -223,8 +221,11 @@ export function WorkerAssignments() {
                 </div>
 
                 <p className="member-card__meta">
-                  Skill requested: <strong>{booking.serviceRequest.skill?.name ?? 'General'}</strong>
-                  {booking.serviceRequest.location ? ` · Location: ${booking.serviceRequest.location}` : ''}
+                  Skill requested:{' '}
+                  <strong>{booking.serviceRequest.skill?.name ?? 'General'}</strong>
+                  {booking.serviceRequest.location
+                    ? ` · Location: ${booking.serviceRequest.location}`
+                    : ''}
                 </p>
 
                 <p className="member-card__meta">
@@ -236,19 +237,26 @@ export function WorkerAssignments() {
                 ) : null}
 
                 {booking.customerNotes ? (
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  <p
+                    style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}
+                  >
                     <em>Customer notes:</em> {booking.customerNotes}
                   </p>
                 ) : null}
 
                 {booking.workerNotes ? (
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  <p
+                    style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}
+                  >
                     <em>Your notes:</em> {booking.workerNotes}
                   </p>
                 ) : null}
 
                 {/* Actions strictly based on status */}
-                <div className="member-card__actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div
+                  className="member-card__actions"
+                  style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}
+                >
                   {isPending ? (
                     <>
                       <Button
@@ -307,7 +315,8 @@ export function WorkerAssignments() {
           <div className="studio-form">
             <p>
               Are you sure you want to decline &ldquo;
-              <strong>{rejectingBooking.serviceRequest.title}</strong>&rdquo;? The customer will be able to select another worker.
+              <strong>{rejectingBooking.serviceRequest.title}</strong>&rdquo;? The customer will be
+              able to select another worker.
             </p>
 
             <label className="field" style={{ marginTop: '1rem' }}>
@@ -323,9 +332,7 @@ export function WorkerAssignments() {
             </label>
 
             <div className="studio-form__actions" style={{ marginTop: '1.5rem' }}>
-              <SecondaryButton onClick={() => setRejectingBooking(null)}>
-                Cancel
-              </SecondaryButton>
+              <SecondaryButton onClick={() => setRejectingBooking(null)}>Cancel</SecondaryButton>
               <Button disabled={Boolean(busyId)} onClick={() => void handleReject()}>
                 {busyId ? 'Rejecting...' : 'Confirm Rejection'}
               </Button>
@@ -360,10 +367,12 @@ export function WorkerAssignments() {
             </label>
 
             <div className="studio-form__actions" style={{ marginTop: '1.5rem' }}>
-              <SecondaryButton onClick={() => setCompletingBooking(null)}>
-                Back
-              </SecondaryButton>
-              <Button disabled={Boolean(busyId)} icon="verify" onClick={() => void handleComplete()}>
+              <SecondaryButton onClick={() => setCompletingBooking(null)}>Back</SecondaryButton>
+              <Button
+                disabled={Boolean(busyId)}
+                icon="verify"
+                onClick={() => void handleComplete()}
+              >
                 {busyId ? 'Completing...' : 'Mark as Completed'}
               </Button>
             </div>
@@ -373,4 +382,3 @@ export function WorkerAssignments() {
     </>
   );
 }
-

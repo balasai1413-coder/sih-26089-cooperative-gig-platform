@@ -1,14 +1,11 @@
 export type BookingStatus =
-  | 'PENDING_WORKER_ACCEPTANCE'
-  | 'ACCEPTED'
-  | 'IN_PROGRESS'
-  | 'COMPLETED'
-  | 'REJECTED'
-  | 'CANCELLED';
+  'PENDING_WORKER_ACCEPTANCE' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'CANCELLED';
 
 export interface Booking {
   id: string;
   status: BookingStatus;
+  /** Step 9 — server-determined payable amount in integer minor units. */
+  priceAmount: number | null;
   scheduledAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
@@ -44,4 +41,3 @@ export interface CreateBookingPayload {
   scheduledAt?: string | null;
   customerNotes?: string | null;
 }
-

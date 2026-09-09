@@ -118,6 +118,8 @@ export class BookingsService {
     return {
       id: booking.id,
       status: booking.status,
+      // Step 9 — server-determined payable amount in minor units (read-only).
+      priceAmount: booking.priceAmount,
       scheduledAt: booking.scheduledAt,
       startedAt: booking.startedAt,
       completedAt: booking.completedAt,
@@ -530,4 +532,3 @@ export class BookingsService {
     return this.toSafeDto(updated);
   }
 }
-

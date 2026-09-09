@@ -1,0 +1,13 @@
+{
+  // This project uses PostgreSQL (Prisma). The SQL Server (mssql) extension's
+  // T-SQL language server reports false "Incorrect syntax" errors in
+  // Prisma-generated PostgreSQL migration files. Disable it for this workspace.
+  "mssql.enableSqlLanguageServer": false,
+  "ms-mssql.enableLanguageServer": false,
+
+  // Treat Prisma migration SQL as plain text so the MSSQL/T-SQL linter
+  // never parses it (it is PostgreSQL syntax and will always be "invalid" T-SQL).
+  "files.associations": {
+    "**/prisma/migrations/**/*.sql": "plaintext"
+  }
+}

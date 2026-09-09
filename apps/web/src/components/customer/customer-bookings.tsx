@@ -173,7 +173,9 @@ export function CustomerBookings() {
 
                 <p className="member-card__meta">
                   Scheduled for: <strong>{formatDate(booking.scheduledAt)}</strong>
-                  {booking.serviceRequest.location ? ` · Location: ${booking.serviceRequest.location}` : ''}
+                  {booking.serviceRequest.location
+                    ? ` · Location: ${booking.serviceRequest.location}`
+                    : ''}
                 </p>
 
                 {booking.startedAt ? (
@@ -202,10 +204,7 @@ export function CustomerBookings() {
 
                 {canCancel ? (
                   <div className="member-card__actions" style={{ marginTop: '0.75rem' }}>
-                    <SecondaryButton
-                      size="sm"
-                      onClick={() => setCancellingBooking(booking)}
-                    >
+                    <SecondaryButton size="sm" onClick={() => setCancellingBooking(booking)}>
                       Cancel booking
                     </SecondaryButton>
                   </div>
@@ -255,4 +254,3 @@ export function CustomerBookings() {
     </>
   );
 }
-

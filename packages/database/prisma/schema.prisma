@@ -84,6 +84,20 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum InvoiceStatus {
+  PAID
+  VOID
+}
+
 model User {
   id                       String              @id @default(uuid()) @db.Uuid
   mobile                   String              @unique @db.VarChar(16)
@@ -112,6 +126,8 @@ model Customer {
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   serviceRequests ServiceRequest[]
   bookings        Booking[]
+  payments        Payment[]
+  invoices        Invoice[]
 }
 
 model Worker {
@@ -135,6 +151,8 @@ model Worker {
   experiences            WorkerExperience[]
   verificationRequests   SkillVerification[]     @relation("SkillVerificationRequestedBy")
   bookings               Booking[]
+  payments               Payment[]
+  invoices               Invoice[]
 }
 
 model Cooperative {
@@ -331,6 +349,9 @@ model Booking {
   customerId       String        @db.Uuid
   workerId         String        @db.Uuid
   status           BookingStatus @default(PENDING_WORKER_ACCEPTANCE)
+  // Server-determined service price in integer minor units (Step 9). Set by the
+  // platform (trusted server-side data). Payments never accept a client amount.
+  priceAmount      Int?          @db.Integer
   scheduledAt      DateTime?
   startedAt        DateTime?
   completedAt      DateTime?
@@ -342,9 +363,67 @@ model Booking {
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   customer         Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   worker           Worker         @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  payments         Payment[]
+  invoices         Invoice[]
 
   @@index([customerId])
   @@index([workerId])
   @@index([serviceRequestId])
   @@index([status])
+}
+model Payment {
+  id                String        @id @default(uuid()) @db.Uuid
+  bookingId         String        @db.Uuid
+  customerId        String        @db.Uuid
+  workerId          String        @db.Uuid
+  amount            Int
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  provider          String?
+  providerOrderId   String?       @db.VarChar(255)
+  providerPaymentId String?       @db.VarChar(255)
+  providerSignature String?       @db.VarChar(512)
+  failureReason     String?       @db.VarChar(500)
+  idempotencyKey    String        @unique @db.VarChar(128)
+  paidAt            DateTime?
+  failedAt          DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  invoiceId         String?       @db.Uuid @unique
+  invoice           Invoice?      @relation(fields: [invoiceId], references: [id])
+
+  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer  Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  worker    Worker    @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([workerId])
+  @@index([status])
+  @@index([providerOrderId])
+}
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  invoiceNumber String        @unique
+  bookingId     String        @db.Uuid
+  customerId    String        @db.Uuid
+  workerId      String        @db.Uuid
+  subtotal      Int
+  taxAmount     Int
+  totalAmount   Int
+  currency      String        @default("INR")
+  status        InvoiceStatus @default(PAID)
+  issuedAt      DateTime      @default(now())
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  payment   Payment?
+
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([workerId])
 }

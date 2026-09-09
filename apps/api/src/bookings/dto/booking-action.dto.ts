@@ -20,4 +20,3 @@ export class CustomerCancelBookingDto {
   @MaxLength(1000, { message: 'customerNotes cannot exceed 1000 characters' })
   customerNotes?: string;
 }
-
