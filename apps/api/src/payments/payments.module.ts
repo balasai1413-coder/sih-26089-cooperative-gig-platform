@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { InvoiceService } from './invoice.service';
 import { PaymentProvider } from './payment.provider';
 import { PAYMENT_PROVIDER } from './payments.constants';
@@ -20,7 +21,7 @@ function paymentProviderFactory(): PaymentProvider {
 }
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, NotificationsModule],
   controllers: [CustomerPaymentsController, WorkerPaymentsController, PaymentWebhookController],
   providers: [
     PaymentsService,

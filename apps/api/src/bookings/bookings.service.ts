@@ -7,6 +7,7 @@ import {
 import {
   BookingStatus,
   CooperativeStatus,
+  NotificationType,
   Prisma,
   ServiceRequestStatus,
   SkillVerificationStatus,
@@ -14,6 +15,7 @@ import {
   WorkerAvailability,
 } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import {
@@ -48,6 +50,7 @@ const bookingInclude = {
       yearsExperience: true,
       user: {
         select: {
+          id: true,
           mobile: true,
         },
       },
@@ -83,7 +86,37 @@ type BookingWithRelations = Prisma.BookingGetPayload<{ include: typeof bookingIn
 
 @Injectable()
 export class BookingsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
+
+  /**
+   * Create a notification for a booking event.
+   * This is server-side only and catches errors gracefully.
+   */
+  private async createBookingNotification(
+    recipientUserId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    eventKey: string,
+    metadata?: Prisma.InputJsonValue | null,
+  ): Promise<void> {
+    try {
+      await this.notificationsService.createNotification({
+        recipientUserId,
+        type,
+        title,
+        message,
+        eventKey,
+        metadata,
+      });
+    } catch (error) {
+      // Log but don't fail the booking operation if notification creation fails
+      console.error(`Failed to create notification (${eventKey}):`, error);
+    }
+  }
 
   /**
    * Resolves customer id from authenticated user token.
@@ -290,6 +323,16 @@ export class BookingsService {
         });
       });
 
+      // Notify worker that a booking was created
+      await this.createBookingNotification(
+        worker.user.id,
+        NotificationType.BOOKING_CREATED,
+        'New Booking',
+        `A new booking has been created for ${request.title}. Please review and accept or reject.`,
+        `booking:${created.id}:created`,
+        { bookingId: created.id, serviceRequestId: request.id },
+      );
+
       return this.toSafeDto(created);
     } catch (error) {
       if (
@@ -373,6 +416,16 @@ export class BookingsService {
       });
     });
 
+    // Notify worker that booking was cancelled
+    await this.createBookingNotification(
+      booking.worker.user.id,
+      NotificationType.BOOKING_CANCELLED,
+      'Booking Cancelled',
+      `The booking for ${booking.serviceRequest.title} has been cancelled by the customer.`,
+      `booking:${updated.id}:cancelled`,
+      { bookingId: updated.id },
+    );
+
     return this.toSafeDto(updated);
   }
 
@@ -437,6 +490,16 @@ export class BookingsService {
       });
     });
 
+    // Notify customer that booking was accepted
+    await this.createBookingNotification(
+      booking.customer.userId,
+      NotificationType.BOOKING_ACCEPTED,
+      'Booking Accepted',
+      `${booking.worker.fullName || 'Your worker'} has accepted your booking for ${booking.serviceRequest.title}.`,
+      `booking:${updated.id}:accepted`,
+      { bookingId: updated.id, workerId: booking.workerId },
+    );
+
     return this.toSafeDto(updated);
   }
 
@@ -468,6 +531,16 @@ export class BookingsService {
       include: bookingInclude,
     });
 
+    // Notify customer that booking was rejected
+    await this.createBookingNotification(
+      booking.customer.userId,
+      NotificationType.BOOKING_REJECTED,
+      'Booking Rejected',
+      `${booking.worker.fullName || 'Your assigned worker'} has rejected your booking for ${booking.serviceRequest.title}. You can try booking another worker.`,
+      `booking:${updated.id}:rejected`,
+      { bookingId: updated.id, workerId: booking.workerId },
+    );
+
     return this.toSafeDto(updated);
   }
 
@@ -498,6 +571,16 @@ export class BookingsService {
       },
       include: bookingInclude,
     });
+
+    // Notify customer that service has started
+    await this.createBookingNotification(
+      booking.customer.userId,
+      NotificationType.BOOKING_STARTED,
+      'Service Started',
+      `${booking.worker.fullName || 'Your worker'} has started working on your booking for ${booking.serviceRequest.title}.`,
+      `booking:${updated.id}:started`,
+      { bookingId: updated.id },
+    );
 
     return this.toSafeDto(updated);
   }
@@ -542,6 +625,16 @@ export class BookingsService {
         include: bookingInclude,
       });
     });
+
+    // Notify customer that service is completed
+    await this.createBookingNotification(
+      booking.customer.userId,
+      NotificationType.BOOKING_COMPLETED,
+      'Booking Completed',
+      `${booking.worker.fullName || 'Your worker'} has completed your booking for ${booking.serviceRequest.title}. Please leave a review.`,
+      `booking:${updated.id}:completed`,
+      { bookingId: updated.id },
+    );
 
     return this.toSafeDto(updated);
   }

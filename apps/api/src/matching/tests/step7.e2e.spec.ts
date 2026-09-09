@@ -25,6 +25,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { WorkerDiscoveryController } from '../matching.controller';
 import { WorkerMatchingService } from '../matching.service';
 import { PROXIMITY_THRESHOLD_KM } from '../utils/coordinate.utils';
+import { NotificationsModule } from '../../notifications/notifications.module';
 import { ReviewsService } from '../../reviews/reviews.service';
 
 /**
@@ -87,7 +88,11 @@ describe('WorkerDiscoveryController (Step 7, real database)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AuthModule, JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
+      imports: [
+        AuthModule,
+        JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET }),
+        NotificationsModule,
+      ],
       controllers: [WorkerDiscoveryController],
       providers: [WorkerMatchingService, PrismaService, ReviewsService],
     }).compile();

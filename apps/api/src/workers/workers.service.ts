@@ -360,7 +360,10 @@ export class WorkersService {
     return worker;
   }
 
-  private toProfile(input: { worker: Awaited<ReturnType<WorkersService['findWorkerProfile']>>['worker']; reputation: Awaited<ReturnType<WorkersService['findWorkerProfile']>>['reputation'] }) {
+  private toProfile(input: {
+    worker: Awaited<ReturnType<WorkersService['findWorkerProfile']>>['worker'];
+    reputation: Awaited<ReturnType<WorkersService['findWorkerProfile']>>['reputation'];
+  }) {
     const { worker, reputation } = input;
     const completionFields = [
       Boolean(worker.fullName),

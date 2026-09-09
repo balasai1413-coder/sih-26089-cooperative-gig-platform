@@ -98,9 +98,7 @@ export function WorkerReviews() {
         <div>
           <p className="dashboard-overline">Reviews & Reputation</p>
           <h1>What customers say about your work.</h1>
-          <p>
-            Reviews build trust. They are read-only and cannot be modified or removed by you.
-          </p>
+          <p>Reviews build trust. They are read-only and cannot be modified or removed by you.</p>
         </div>
       </div>
 
@@ -108,8 +106,18 @@ export function WorkerReviews() {
         <StatCard
           label="Average rating"
           value={averageRating !== null ? String(averageRating) : '—'}
-          change={reviews.length > 0 ? `${reviews.length} review${reviews.length > 1 ? 's' : ''}` : 'No reviews yet'}
-          tone={averageRating !== null && averageRating >= 4 ? 'emerald' : averageRating !== null && averageRating >= 3 ? 'cyan' : 'amber'}
+          change={
+            reviews.length > 0
+              ? `${reviews.length} review${reviews.length > 1 ? 's' : ''}`
+              : 'No reviews yet'
+          }
+          tone={
+            averageRating !== null && averageRating >= 4
+              ? 'emerald'
+              : averageRating !== null && averageRating >= 3
+                ? 'cyan'
+                : 'amber'
+          }
           icon={<Icon name="sparkles" />}
         />
         <StatCard

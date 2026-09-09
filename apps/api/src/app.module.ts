@@ -11,6 +11,7 @@ import { WorkersModule } from './workers/workers.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { VerificationModule } from './verification/verification.module';
 import { PaymentsModule } from './payments/payments.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PaymentsModule } from './payments/payments.module';
     BookingsModule,
     CooperativesModule,
     MatchingModule,
+    NotificationsModule,
     PaymentsModule,
     ReviewsModule,
     ServiceRequestsModule,

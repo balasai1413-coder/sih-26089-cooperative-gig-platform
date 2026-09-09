@@ -23,6 +23,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { AuthenticationGuard } from '../../auth/guards/authentication.guard';
 import { OwnershipGuard } from '../../auth/guards/ownership.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
+import { NotificationsModule } from '../../notifications/notifications.module';
 import { PrismaService } from '../../database/prisma.service';
 import { ReviewsService } from '../reviews.service';
 import { CustomerReviewsController } from '../customer-reviews.controller';
@@ -85,7 +86,11 @@ describe('Ratings, Reviews & Reputation (Step 10, real database)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AuthModule, JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
+      imports: [
+        AuthModule,
+        JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET }),
+        NotificationsModule,
+      ],
       controllers: [
         CustomerBookingsController,
         WorkerBookingsController,
@@ -341,7 +346,7 @@ describe('Ratings, Reviews & Reputation (Step 10, real database)', () => {
       expect(res.body.worker.id).toBe(worker1Id);
     });
 
-    it('2. Customer cannot review another customer\'s completed booking', async () => {
+    it("2. Customer cannot review another customer's completed booking", async () => {
       const res = await request(app.getHttpServer())
         .post(`/api/v1/customers/me/bookings/${completedBookingId}/review`)
         .set('Authorization', `Bearer ${customerBToken}`)
@@ -498,7 +503,7 @@ describe('Ratings, Reviews & Reputation (Step 10, real database)', () => {
       expect(res.body.id).toBe(firstReviewId);
     });
 
-    it('15. Customer cannot read another customer\'s review', async () => {
+    it("15. Customer cannot read another customer's review", async () => {
       const listRes = await request(app.getHttpServer())
         .get('/api/v1/customers/me/reviews')
         .set('Authorization', `Bearer ${customerAToken}`);
@@ -521,7 +526,7 @@ describe('Ratings, Reviews & Reputation (Step 10, real database)', () => {
       expect(res.body[0].worker.id).toBe(worker1Id);
     });
 
-    it('17. Worker cannot read another worker\'s reviews', async () => {
+    it("17. Worker cannot read another worker's reviews", async () => {
       const w1Res = await request(app.getHttpServer())
         .get('/api/v1/workers/me/reviews')
         .set('Authorization', `Bearer ${worker1Token}`);
@@ -679,7 +684,12 @@ describe('Ratings, Reviews & Reputation (Step 10, real database)', () => {
         },
       });
       await prisma.review.create({
-        data: { bookingId: anotherCompleted.id, customerId: customerCId, workerId: worker1Id, rating: 4 },
+        data: {
+          bookingId: anotherCompleted.id,
+          customerId: customerCId,
+          workerId: worker1Id,
+          rating: 4,
+        },
       });
 
       const res = await request(app.getHttpServer())

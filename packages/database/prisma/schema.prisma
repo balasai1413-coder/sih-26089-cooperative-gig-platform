@@ -98,6 +98,18 @@ enum InvoiceStatus {
   VOID
 }
 
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_ACCEPTED
+  BOOKING_REJECTED
+  BOOKING_STARTED
+  BOOKING_COMPLETED
+  BOOKING_CANCELLED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  REVIEW_RECEIVED
+}
+
 model User {
   id                       String              @id @default(uuid()) @db.Uuid
   mobile                   String              @unique @db.VarChar(16)
@@ -113,6 +125,7 @@ model User {
   administeredCooperatives Cooperative[]       @relation("CooperativeAdministrators")
   verifiedWorkerSkills     WorkerSkill[]       @relation("WorkerSkillVerifiedBy")
   skillVerifications       SkillVerification[] @relation("SkillVerifiedBy")
+  notifications            Notification[]
 
   @@index([role])
   @@index([isActive])
@@ -450,4 +463,23 @@ model Invoice {
   @@index([bookingId])
   @@index([customerId])
   @@index([workerId])
+}
+
+model Notification {
+  id               String           @id @default(uuid()) @db.Uuid
+  recipientUserId  String           @db.Uuid
+  type             NotificationType
+  title            String           @db.VarChar(200)
+  message          String           @db.VarChar(1000)
+  eventKey         String           @unique @db.VarChar(255)
+  metadata         Json?
+  readAt           DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  recipientUser    User             @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId])
+  @@index([recipientUserId, createdAt])
+  @@index([recipientUserId, readAt])
+  @@index([createdAt])
 }

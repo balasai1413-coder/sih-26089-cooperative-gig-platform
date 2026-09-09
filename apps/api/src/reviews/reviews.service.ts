@@ -4,8 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BookingStatus, Prisma } from '@prisma/client';
+import { BookingStatus, NotificationType, Prisma } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { CreateReviewDto } from './dto/create-review.dto';
 
@@ -58,7 +59,37 @@ type ReviewWithRelations = Prisma.ReviewGetPayload<{ include: typeof reviewInclu
 
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
+
+  /**
+   * Create a notification for a review event.
+   * This is server-side only and catches errors gracefully.
+   */
+  private async createReviewNotification(
+    recipientUserId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    eventKey: string,
+    metadata?: Prisma.InputJsonValue | null,
+  ): Promise<void> {
+    try {
+      await this.notificationsService.createNotification({
+        recipientUserId,
+        type,
+        title,
+        message,
+        eventKey,
+        metadata,
+      });
+    } catch (error) {
+      // Log but don't fail the review operation if notification creation fails
+      console.error(`Failed to create notification (${eventKey}):`, error);
+    }
+  }
 
   private toSafeDto(review: ReviewWithRelations): ReviewResponse {
     return {
@@ -73,7 +104,11 @@ export class ReviewsService {
     };
   }
 
-  async createReview(customerUser: AuthenticatedUser, bookingId: string, dto: CreateReviewDto): Promise<ReviewResponse> {
+  async createReview(
+    customerUser: AuthenticatedUser,
+    bookingId: string,
+    dto: CreateReviewDto,
+  ): Promise<ReviewResponse> {
     const customer = await this.prisma.customer.findUnique({
       where: { userId: customerUser.id },
       select: { id: true },
@@ -129,6 +164,22 @@ export class ReviewsService {
       include: reviewInclude,
     });
 
+    // Fetch worker user ID and send notification
+    const worker = await this.prisma.worker.findUnique({
+      where: { id: booking.workerId },
+      select: { user: { select: { id: true } } },
+    });
+    if (worker) {
+      await this.createReviewNotification(
+        worker.user.id,
+        NotificationType.REVIEW_RECEIVED,
+        'New Review Received',
+        `You have received a ${dto.rating}-star review from a customer.`,
+        `review:${review.id}:received`,
+        { reviewId: review.id, rating: dto.rating },
+      );
+    }
+
     return this.toSafeDto(review);
   }
 
@@ -150,7 +201,10 @@ export class ReviewsService {
     return reviews.map((r) => this.toSafeDto(r));
   }
 
-  async getCustomerReview(customerUser: AuthenticatedUser, reviewId: string): Promise<ReviewResponse> {
+  async getCustomerReview(
+    customerUser: AuthenticatedUser,
+    reviewId: string,
+  ): Promise<ReviewResponse> {
     const customer = await this.prisma.customer.findUnique({
       where: { userId: customerUser.id },
       select: { id: true },
@@ -216,7 +270,13 @@ export class ReviewsService {
     const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
     const averageRating = Math.round((sum / totalReviews) * 10) / 10;
 
-    const distribution: ReputationResponse['ratingDistribution'] = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+    const distribution: ReputationResponse['ratingDistribution'] = {
+      '1': 0,
+      '2': 0,
+      '3': 0,
+      '4': 0,
+      '5': 0,
+    };
     for (const r of reviews) {
       distribution[r.rating as 1 | 2 | 3 | 4 | 5]++;
     }

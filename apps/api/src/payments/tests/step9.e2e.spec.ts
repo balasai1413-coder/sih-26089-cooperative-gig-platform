@@ -26,6 +26,7 @@ import { OwnershipGuard } from '../../auth/guards/ownership.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { PrismaService } from '../../database/prisma.service';
 import { CustomerPaymentsController } from '../customer-payments.controller';
+import { NotificationsModule } from '../../notifications/notifications.module';
 import { InvoiceService } from '../invoice.service';
 import { PAYMENT_PROVIDER } from '../payments.constants';
 import { PaymentsService } from '../payments.service';
@@ -67,7 +68,11 @@ describe('Payments and Invoicing Step9', () => {
   beforeAll(async () => {
     mockProvider = new MockPaymentProvider('step9-mock-secret');
     const moduleRef = await Test.createTestingModule({
-      imports: [AuthModule, JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
+      imports: [
+        AuthModule,
+        JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET }),
+        NotificationsModule,
+      ],
       controllers: [CustomerPaymentsController, WorkerPaymentsController],
       providers: [
         PaymentsService,

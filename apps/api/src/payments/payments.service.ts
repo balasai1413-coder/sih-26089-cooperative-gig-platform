@@ -7,9 +7,10 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { BookingStatus, PaymentStatus, Prisma } from '@prisma/client';
+import { BookingStatus, NotificationType, PaymentStatus, Prisma } from '@prisma/client';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { InvoiceService } from './invoice.service';
@@ -51,8 +52,36 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly invoiceService: InvoiceService,
+    private readonly notificationsService: NotificationsService,
     @Inject(PAYMENT_PROVIDER) private readonly provider: PaymentProvider,
   ) {}
+
+  /**
+   * Create a notification for a payment event.
+   * This is server-side only and catches errors gracefully.
+   */
+  private async createPaymentNotification(
+    recipientUserId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    eventKey: string,
+    metadata?: Prisma.InputJsonValue | null,
+  ): Promise<void> {
+    try {
+      await this.notificationsService.createNotification({
+        recipientUserId,
+        type,
+        title,
+        message,
+        eventKey,
+        metadata,
+      });
+    } catch (error) {
+      // Log but don't fail the payment operation if notification creation fails
+      console.error(`Failed to create notification (${eventKey}):`, error);
+    }
+  }
 
   private async resolveCustomerId(user: AuthenticatedUser): Promise<string> {
     const customer = await this.prisma.customer.findUnique({
@@ -244,7 +273,7 @@ export class PaymentsService {
   }
 
   private async failPayment(id: string, reason: string): Promise<void> {
-    await this.prisma.payment.update({
+    const updated = await this.prisma.payment.update({
       where: { id },
       data: {
         status: PaymentStatus.FAILED,
@@ -252,6 +281,22 @@ export class PaymentsService {
         failureReason: reason.slice(0, 500),
       },
     });
+
+    // Notify customer that payment failed
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: updated.customerId },
+      select: { userId: true },
+    });
+    if (customer) {
+      await this.createPaymentNotification(
+        customer.userId,
+        NotificationType.PAYMENT_FAILED,
+        'Payment Failed',
+        `Your payment of ${(updated.amount / 100).toFixed(2)} ${updated.currency} could not be processed. ${reason}`,
+        `payment:${updated.id}:failed`,
+        { paymentId: updated.id },
+      );
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -332,6 +377,24 @@ export class PaymentsService {
       where: { id: payment.id },
     });
     await this.invoiceService.generateInvoiceForPayment(succeeded!);
+
+    // Notify customer that payment was successful
+    // Get customer user ID for notification
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: succeeded!.customerId },
+      select: { userId: true },
+    });
+    if (customer) {
+      await this.createPaymentNotification(
+        customer.userId,
+        NotificationType.PAYMENT_SUCCESS,
+        'Payment Successful',
+        `Your payment of ${(succeeded!.amount / 100).toFixed(2)} ${succeeded!.currency} has been successfully processed.`,
+        `payment:${succeeded!.id}:success`,
+        { paymentId: succeeded!.id },
+      );
+    }
+
     return this.toCustomerShape(succeeded!, payment.invoice);
   }
 

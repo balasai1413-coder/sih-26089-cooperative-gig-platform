@@ -23,6 +23,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { AuthenticationGuard } from '../../auth/guards/authentication.guard';
 import { OwnershipGuard } from '../../auth/guards/ownership.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
+import { NotificationsModule } from '../../notifications/notifications.module';
 import { PrismaService } from '../../database/prisma.service';
 import { BookingsService } from '../bookings.service';
 import { CustomerBookingsController } from '../customer-bookings.controller';
@@ -80,7 +81,11 @@ describe('Bookings & Worker Assignment (Step 8, real database)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AuthModule, JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
+      imports: [
+        AuthModule,
+        JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET }),
+        NotificationsModule,
+      ],
       controllers: [CustomerBookingsController, WorkerBookingsController],
       providers: [BookingsService],
     }).compile();

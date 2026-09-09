@@ -33,7 +33,15 @@ function formatDate(value: string | null) {
   });
 }
 
-function StarRating({ value, onChange, readonly }: { value: number; onChange?: (v: number) => void; readonly?: boolean }) {
+function StarRating({
+  value,
+  onChange,
+  readonly,
+}: {
+  value: number;
+  onChange?: (v: number) => void;
+  readonly?: boolean;
+}) {
   return (
     <div style={{ display: 'flex', gap: '0.25rem' }}>
       {[1, 2, 3, 4, 5].map((star) => (
@@ -284,7 +292,13 @@ export function CustomerBookings() {
                       <span style={{ fontWeight: 600 }}>{booking.review!.rating}.0</span>
                     </div>
                     {booking.review!.comment ? (
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                      <p
+                        style={{
+                          fontSize: '0.9rem',
+                          color: 'var(--text-muted)',
+                          marginTop: '0.25rem',
+                        }}
+                      >
                         &ldquo;{booking.review!.comment}&rdquo;
                       </p>
                     ) : null}
@@ -359,7 +373,8 @@ export function CustomerBookings() {
         >
           <div className="studio-form">
             <p>
-              How was your experience with <strong>{reviewingBooking.worker.fullName ?? 'Worker'}</strong>?
+              How was your experience with{' '}
+              <strong>{reviewingBooking.worker.fullName ?? 'Worker'}</strong>?
             </p>
 
             <label className="field" style={{ marginTop: '1rem' }}>
