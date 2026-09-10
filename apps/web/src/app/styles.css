@@ -2006,6 +2006,67 @@ svg {
   min-height: 20rem;
   padding: 1.25rem;
 }
+.federation-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+.federation-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid rgba(33, 35, 42, 0.08);
+}
+.federation-list__row div,
+.federation-metrics,
+.federation-skill {
+  display: grid;
+}
+.federation-list__row span,
+.federation-skill span,
+.federation-skill small {
+  color: #7a7983;
+  font-size: 0.7rem;
+}
+.federation-list__row strong {
+  color: #2d7d6f;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.federation-metrics {
+  gap: 0.9rem;
+  margin-top: 1.6rem;
+}
+.federation-metrics span {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #7a7983;
+  font-size: 0.78rem;
+}
+.federation-metrics b {
+  color: #22242b;
+}
+.federation-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.federation-skill {
+  gap: 0.35rem;
+  min-height: 8rem;
+  padding: 1rem;
+}
+.federation-skill b {
+  font-size: 0.92rem;
+}
+.federation-skill strong {
+  margin-top: auto;
+  color: #2d7d6f;
+  font-size: 1.35rem;
+}
 .card-heading {
   display: flex;
   align-items: flex-start;
@@ -2808,6 +2869,9 @@ svg {
   }
   .dashboard-split > .card {
     min-height: 17rem;
+  }
+  .federation-skill-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 680px) {

@@ -9,5 +9,6 @@ import { HistoricalDemandService } from './historical-demand.service';
   imports: [AuthModule],
   controllers: [DemandForecastingController],
   providers: [HistoricalDemandService, BaselineForecastingStrategy, DemandForecastingService],
+  exports: [DemandForecastingService],
 })
 export class DemandForecastingModule {}

@@ -14,6 +14,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WelfareModule } from './welfare/welfare.module';
 import { DemandForecastingModule } from './demand-forecasting/demand-forecasting.module';
+import { FederationsModule } from './federations/federations.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DemandForecastingModule } from './demand-forecasting/demand-forecasting
     BookingsModule,
     CooperativesModule,
     DemandForecastingModule,
+    FederationsModule,
     MatchingModule,
     NotificationsModule,
     PaymentsModule,

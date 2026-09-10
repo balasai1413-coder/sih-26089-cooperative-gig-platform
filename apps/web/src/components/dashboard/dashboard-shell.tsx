@@ -13,6 +13,7 @@ import { CooperativeOverview } from '@/components/cooperative/cooperative-overvi
 import { CooperativeSkillCatalog } from '@/components/cooperative/cooperative-skill-catalog';
 import { CooperativeVerificationStudio } from '@/components/cooperative/cooperative-verification-studio';
 import { DemandForecastingDashboard } from '@/components/cooperative/demand-forecasting-dashboard';
+import { FederationOverviewView } from '@/components/federation/federation-overview';
 import { CustomerRequests } from '@/components/customer/customer-requests';
 import { CustomerBookings } from '@/components/customer/customer-bookings';
 import { CustomerPayments } from '@/components/customer/customer-payments';
@@ -27,7 +28,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/types/auth';
 
-type DashboardKind = 'customer' | 'worker' | 'cooperative';
+type DashboardKind = 'customer' | 'worker' | 'cooperative' | 'federation';
 type NavItem = { label: string; icon: IconName };
 
 const dashboardFor: Record<UserRole, string> = {
@@ -39,6 +40,7 @@ const roleFor: Record<DashboardKind, UserRole> = {
   customer: 'CUSTOMER',
   worker: 'WORKER',
   cooperative: 'COOPERATIVE_ADMIN',
+  federation: 'COOPERATIVE_ADMIN',
 };
 const configs: Record<
   DashboardKind,
@@ -97,6 +99,21 @@ const configs: Record<
     greeting: 'Build the conditions for people to thrive.',
     description: 'A single calm place to guide your cooperative and its potential.',
     accent: 'amber',
+  },
+  federation: {
+    label: 'Federation workspace',
+    labelShort: 'Federation',
+    nav: [
+      { label: 'Overview', icon: 'grid' },
+      { label: 'Cooperatives', icon: 'building' },
+      { label: 'Workforce', icon: 'users' },
+      { label: 'Demand intelligence', icon: 'sparkles' },
+      { label: 'Welfare', icon: 'shield' },
+      { label: 'Reports', icon: 'briefcase' },
+    ],
+    greeting: 'See the strength of the network.',
+    description: 'Aggregate intelligence for a connected cooperative ecosystem.',
+    accent: 'emerald',
   },
 };
 
@@ -264,6 +281,7 @@ function DashboardView({
   if (kind === 'cooperative' && active === 'Workers') return <CooperativeMembers />;
   if (kind === 'cooperative' && active === 'Skills') return <CooperativeSkillCatalog />;
   if (kind === 'cooperative' && active === 'Analytics') return <DemandForecastingDashboard />;
+  if (kind === 'federation') return <FederationOverviewView />;
   const showingOverview = active === configs[kind].nav[0].label;
   if (!showingOverview) return <PlaceholderView kind={kind} active={active} />;
   if (kind === 'customer') return <CustomerOverview userName={userName} />;

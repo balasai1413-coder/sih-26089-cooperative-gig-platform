@@ -18,6 +18,7 @@ model User {
   createdAt                DateTime            @default(now())
   updatedAt                DateTime            @updatedAt
   administeredCooperatives Cooperative[]       @relation("CooperativeAdministrators")
+  federationAdministrators FederationAdministrator[]
   customer                 Customer?
   notifications            Notification[]
   skillVerifications       SkillVerification[] @relation("SkillVerifiedBy")
@@ -90,9 +91,51 @@ model Cooperative {
   memberships     CooperativeMembership[]
   bookings        Booking[]
   welfarePrograms WelfareProgram[]
+  federationMembership FederationMembership?
 
   @@index([adminUserId])
   @@index([status])
+}
+
+model Federation {
+  id              String                    @id @default(uuid()) @db.Uuid
+  name            String                    @db.VarChar(160)
+  code            String                    @unique @db.VarChar(80)
+  description     String?                   @db.VarChar(1000)
+  status          FederationStatus          @default(ACTIVE)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  memberships     FederationMembership[]
+  administrators  FederationAdministrator[]
+
+  @@index([status])
+}
+
+model FederationMembership {
+  id            String                    @id @default(uuid()) @db.Uuid
+  federationId  String                    @db.Uuid
+  cooperativeId String                    @unique @db.Uuid
+  status        FederationMembershipStatus @default(PENDING)
+  joinedAt      DateTime?
+  leftAt        DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  federation    Federation                @relation(fields: [federationId], references: [id], onDelete: Cascade)
+  cooperative   Cooperative               @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+
+  @@index([federationId, status])
+}
+
+model FederationAdministrator {
+  id           String     @id @default(uuid()) @db.Uuid
+  federationId String     @db.Uuid
+  userId       String     @db.Uuid
+  createdAt    DateTime   @default(now())
+  federation   Federation @relation(fields: [federationId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([federationId, userId])
+  @@index([userId])
 }
 
 model CooperativeMembership {
@@ -513,6 +556,18 @@ enum CooperativeStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
+}
+
+enum FederationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum FederationMembershipStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  LEFT
 }
 
 enum ServiceRequestStatus {
