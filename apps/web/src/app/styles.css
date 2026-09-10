@@ -3451,3 +3451,125 @@ svg {
     grid-template-columns: 1fr;
   }
 }
+
+/* Demand forecasting — data-led cooperative planning surface */
+.demand-forecast {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.demand-filter-bar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.demand-filter-bar .field {
+  min-width: 0;
+}
+
+.demand-forecast__error {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(201, 67, 67, 0.28);
+  border-radius: var(--radius-md);
+  color: #a83333;
+  background: rgba(201, 67, 67, 0.07);
+}
+
+.demand-forecast__hero-grid,
+.demand-forecast__segments {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.demand-forecast__segments {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.demand-forecast__insight,
+.demand-forecast__method,
+.demand-forecast__list {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1.25rem;
+}
+
+.demand-forecast__insight {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(237, 173, 65, 0.2), transparent 46%),
+    rgba(255, 255, 255, 0.55);
+}
+
+.demand-forecast__insight > p,
+.demand-forecast__method > p:not(.dashboard-overline),
+.demand-forecast__method small,
+.demand-forecast__insight small,
+.demand-forecast__quiet,
+.demand-forecast__unavailable > p,
+.demand-forecast__unavailable > small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.demand-forecast__method h2,
+.demand-forecast__list h2 {
+  font-size: 1.15rem;
+}
+
+.demand-forecast__rows {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.demand-forecast__rows > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+}
+
+.demand-forecast__rows span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demand-forecast__rows b {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.demand-forecast__unavailable {
+  gap: 0.7rem;
+}
+
+@media (max-width: 980px) {
+  .demand-filter-bar,
+  .demand-forecast__segments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .demand-filter-bar .button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .demand-filter-bar,
+  .demand-forecast__hero-grid,
+  .demand-forecast__segments {
+    grid-template-columns: 1fr;
+  }
+}

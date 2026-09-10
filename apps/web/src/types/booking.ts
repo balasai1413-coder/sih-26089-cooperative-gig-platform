@@ -43,6 +43,7 @@ export interface Booking {
 
 export interface CreateBookingPayload {
   workerId: string;
+  cooperativeId?: string;
   scheduledAt?: string | null;
   customerNotes?: string | null;
 }

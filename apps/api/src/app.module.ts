@@ -12,6 +12,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { VerificationModule } from './verification/verification.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DemandForecastingModule } from './demand-forecasting/demand-forecasting.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AuthModule,
     BookingsModule,
     CooperativesModule,
+    DemandForecastingModule,
     MatchingModule,
     NotificationsModule,
     PaymentsModule,
