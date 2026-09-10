@@ -12,6 +12,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { VerificationModule } from './verification/verification.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { WelfareModule } from './welfare/welfare.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     SkillsModule,
     WorkersModule,
     VerificationModule,
+    WelfareModule,
   ],
   controllers: [HealthController],
 })
