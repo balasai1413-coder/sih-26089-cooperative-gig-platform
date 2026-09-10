@@ -88,6 +88,7 @@ model Cooperative {
   status          CooperativeStatus       @default(ACTIVE)
   admin           User?                   @relation("CooperativeAdministrators", fields: [adminUserId], references: [id])
   memberships     CooperativeMembership[]
+  bookings        Booking[]
   welfarePrograms WelfareProgram[]
 
   @@index([adminUserId])
@@ -267,6 +268,7 @@ model Booking {
   serviceRequestId String         @db.Uuid
   customerId       String         @db.Uuid
   workerId         String         @db.Uuid
+  cooperativeId    String?        @db.Uuid
   status           BookingStatus  @default(PENDING_WORKER_ACCEPTANCE)
   scheduledAt      DateTime?
   startedAt        DateTime?
@@ -280,6 +282,7 @@ model Booking {
   customer         Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   worker           Worker         @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  cooperative      Cooperative?   @relation(fields: [cooperativeId], references: [id], onDelete: Restrict)
   invoices         Invoice[]
   payments         Payment[]
   review           Review?
@@ -288,6 +291,7 @@ model Booking {
   @@index([workerId])
   @@index([serviceRequestId])
   @@index([status])
+  @@index([cooperativeId, status])
 }
 
 model Review {

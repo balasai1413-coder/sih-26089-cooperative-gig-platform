@@ -56,6 +56,7 @@ describe('Bookings & Worker Assignment (Step 8, real database)', () => {
 
   let activeSkillId: string;
   let inactiveSkillId: string;
+  let activeCoopId: string;
   let openRequestId: string;
   let closedRequestId: string;
   let cancelledRequestId: string;
@@ -112,6 +113,7 @@ describe('Bookings & Worker Assignment (Step 8, real database)', () => {
         status: CooperativeStatus.ACTIVE,
       },
     });
+    activeCoopId = coop.id;
     createdCoopIds.push(coop.id);
 
     const inactiveCoop = await prisma.cooperative.create({
@@ -354,6 +356,12 @@ describe('Bookings & Worker Assignment (Step 8, real database)', () => {
       expect(res.body.worker.id).toBe(worker1Id);
       expect(res.body.customerNotes).toBe('Please bring testing equipment.');
       expect(res.body.serviceRequest.id).toBe(openRequestId);
+
+      const stored = await prisma.booking.findUnique({
+        where: { id: res.body.id },
+        select: { cooperativeId: true },
+      });
+      expect(stored?.cooperativeId).toBe(activeCoopId);
     });
 
     it('2. Unauthenticated user rejected with 401', async () => {

@@ -54,17 +54,12 @@ const bookingInclude = {
           mobile: true,
         },
       },
-      memberships: {
-        where: { leftAt: null, cooperative: { status: CooperativeStatus.ACTIVE } },
-        select: {
-          cooperative: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
+    },
+  },
+  cooperative: {
+    select: {
+      id: true,
+      name: true,
     },
   },
   customer: {
@@ -154,7 +149,7 @@ export class BookingsService {
    * admin identifiers, and sensitive authentication internals.
    */
   private toSafeDto(booking: BookingWithRelations) {
-    const coop = booking.worker.memberships[0]?.cooperative ?? null;
+    const coop = booking.cooperative;
     return {
       id: booking.id,
       status: booking.status,
@@ -209,6 +204,7 @@ export class BookingsService {
    *  - Worker must exist, be active, with role WORKER
    *  - Worker availability cannot be UNAVAILABLE
    *  - Worker must hold an open membership in an ACTIVE cooperative
+   *  - The responsible cooperative is snapshotted on the booking at creation
    *  - Worker must have a VERIFIED WorkerSkill for the request's skill
    *  - Request must be OPEN and belong to the authenticated customer
    *  - Concurrency & duplicate active booking protection enforced via transaction + unique constraint
@@ -288,6 +284,23 @@ export class BookingsService {
       throw new BadRequestException('Worker is not verified for the required skill');
     }
 
+    // A worker may belong to more than one cooperative. The match UI supplies
+    // its displayed cooperative id; other clients can omit it only when there
+    // is exactly one active membership. This prevents an arbitrary membership
+    // from becoming a permanent historical ownership snapshot.
+    const membership = dto.cooperativeId
+      ? worker.memberships.find((item) => item.cooperative.id === dto.cooperativeId)
+      : worker.memberships.length === 1
+        ? worker.memberships[0]
+        : undefined;
+    if (!membership) {
+      throw new BadRequestException(
+        dto.cooperativeId
+          ? 'Worker is not an active member of the selected cooperative'
+          : 'Select the cooperative responsible for this booking',
+      );
+    }
+
     // 3. Atomically check and create booking to prevent duplicate assignments & race conditions
     try {
       const created = await this.prisma.$transaction(async (tx) => {
@@ -315,6 +328,7 @@ export class BookingsService {
             serviceRequestId: request.id,
             customerId,
             workerId: worker.id,
+            cooperativeId: membership.cooperative.id,
             status: BookingStatus.PENDING_WORKER_ACCEPTANCE,
             scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
             customerNotes: dto.customerNotes ?? null,

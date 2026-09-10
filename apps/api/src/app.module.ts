@@ -13,6 +13,7 @@ import { VerificationModule } from './verification/verification.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WelfareModule } from './welfare/welfare.module';
+import { DemandForecastingModule } from './demand-forecasting/demand-forecasting.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { WelfareModule } from './welfare/welfare.module';
     AuthModule,
     BookingsModule,
     CooperativesModule,
+    DemandForecastingModule,
     MatchingModule,
     NotificationsModule,
     PaymentsModule,

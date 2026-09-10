@@ -53,6 +53,7 @@ export class NotificationsController {
    */
   @Patch('read-all')
   async markAllAsRead(@CurrentUser() user: AuthenticatedUser, @Body() _dto: MarkAllAsReadDto) {
+    void _dto;
     return this.notificationsService.markAllAsRead(user);
   }
 
@@ -88,6 +89,7 @@ export class NotificationsController {
     @Param('notificationId', ParseUUIDPipe) notificationId: string,
     @Body() _dto: MarkAsReadDto,
   ) {
+    void _dto;
     try {
       return await this.notificationsService.markAsRead(user, notificationId);
     } catch (error) {

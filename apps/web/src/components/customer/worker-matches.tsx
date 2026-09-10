@@ -163,6 +163,7 @@ export function WorkerMatches({
     try {
       const booking = await customerApi.createBooking(accessToken, requestId, {
         workerId: selectedWorker.workerId,
+        cooperativeId: selectedWorker.cooperative?.id,
         scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : null,
         customerNotes,
       });
