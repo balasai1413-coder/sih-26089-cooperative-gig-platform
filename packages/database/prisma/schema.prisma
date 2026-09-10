@@ -189,6 +189,7 @@ model Cooperative {
   updatedAt      DateTime                @updatedAt
   admin          User?                   @relation("CooperativeAdministrators", fields: [adminUserId], references: [id], onDelete: SetNull)
   memberships    CooperativeMembership[]
+  bookings       Booking[]
 
   @@index([adminUserId])
   @@index([status])
@@ -367,6 +368,9 @@ model Booking {
   serviceRequestId String        @db.Uuid
   customerId       String        @db.Uuid
   workerId         String        @db.Uuid
+  // Historical ownership snapshot. Nullable only for pre-snapshot bookings:
+  // their responsible cooperative cannot be reconstructed reliably.
+  cooperativeId    String?       @db.Uuid
   status           BookingStatus @default(PENDING_WORKER_ACCEPTANCE)
   priceAmount      Int?          @db.Integer
   scheduledAt      DateTime?
@@ -380,6 +384,7 @@ model Booking {
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   customer         Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   worker           Worker         @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  cooperative      Cooperative?   @relation(fields: [cooperativeId], references: [id], onDelete: Restrict)
   payments         Payment[]
   invoices         Invoice[]
   review           Review?
@@ -388,6 +393,7 @@ model Booking {
   @@index([workerId])
   @@index([serviceRequestId])
   @@index([status])
+  @@index([cooperativeId, status])
 }
 
 model Review {

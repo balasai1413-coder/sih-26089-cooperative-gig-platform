@@ -12,6 +12,7 @@ import { CooperativeMembers } from '@/components/cooperative/cooperative-members
 import { CooperativeOverview } from '@/components/cooperative/cooperative-overview';
 import { CooperativeSkillCatalog } from '@/components/cooperative/cooperative-skill-catalog';
 import { CooperativeVerificationStudio } from '@/components/cooperative/cooperative-verification-studio';
+import { DemandForecastingDashboard } from '@/components/cooperative/demand-forecasting-dashboard';
 import { CustomerRequests } from '@/components/customer/customer-requests';
 import { CustomerBookings } from '@/components/customer/customer-bookings';
 import { CustomerPayments } from '@/components/customer/customer-payments';
@@ -262,6 +263,7 @@ function DashboardView({
   if (kind === 'cooperative' && active === 'Overview') return <CooperativeOverview />;
   if (kind === 'cooperative' && active === 'Workers') return <CooperativeMembers />;
   if (kind === 'cooperative' && active === 'Skills') return <CooperativeSkillCatalog />;
+  if (kind === 'cooperative' && active === 'Analytics') return <DemandForecastingDashboard />;
   const showingOverview = active === configs[kind].nav[0].label;
   if (!showingOverview) return <PlaceholderView kind={kind} active={active} />;
   if (kind === 'customer') return <CustomerOverview userName={userName} />;
