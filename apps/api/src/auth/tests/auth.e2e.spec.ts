@@ -292,6 +292,46 @@ describe('Authentication API', () => {
     expect(unknownUser.body.message).toBe('Invalid mobile number or password');
   });
 
+  it('PASS: completes the shared login, refresh, me, and logout lifecycle for a provisioned admin', async () => {
+    const timestamp = new Date();
+    users.push({
+      id: 'provisioned-admin',
+      mobile: '+919876543299',
+      email: 'admin@example.com',
+      passwordHash: await bcrypt.hash('admin-pass-123', 12),
+      refreshTokenHash: null,
+      role: UserRole.COOPERATIVE_ADMIN,
+      isActive: true,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+
+    const login = await http()
+      .post('/api/v1/auth/login')
+      .send({ mobile: '+919876543299', password: 'admin-pass-123' })
+      .expect(200);
+    expect(login.body.user.role).toBe(UserRole.COOPERATIVE_ADMIN);
+
+    await http()
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .expect(200)
+      .expect((response) => expect(response.body.role).toBe(UserRole.COOPERATIVE_ADMIN));
+
+    const refreshed = await http()
+      .post('/api/v1/auth/refresh')
+      .set('Cookie', login.headers['set-cookie'])
+      .expect(200);
+    expect(refreshed.body.user.role).toBe(UserRole.COOPERATIVE_ADMIN);
+
+    await http()
+      .post('/api/v1/auth/logout')
+      .set('Authorization', `Bearer ${refreshed.body.accessToken}`)
+      .set('Cookie', refreshed.headers['set-cookie'])
+      .expect(200);
+    await http().post('/api/v1/auth/refresh').set('Cookie', refreshed.headers['set-cookie']).expect(401);
+  });
+
   it('PASS: accepts valid JWTs and rejects missing, invalid, and expired access tokens', async () => {
     const login = await http()
       .post('/api/v1/auth/login')

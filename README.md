@@ -65,6 +65,25 @@ The initial REST endpoints are:
 
 Registration accepts an E.164 mobile number, optional email, and an 8–128 character password. The role comes from the registration route, never from the request body. Successful registration, login, and refresh responses return a safe user object and an access token. Their rotating refresh JWT is stored in an `HttpOnly`, `SameSite=Strict` cookie scoped to `/api/v1/auth`, never in the JSON response. Passwords and persisted refresh-token hashes are never returned by the API.
 
+## Cooperative admin provisioning
+
+`COOPERATIVE_ADMIN` accounts are not publicly self-registerable. Provision an
+administrator from a server-side shell after the target cooperative exists:
+
+```powershell
+$env:ADMIN_MOBILE = '+919876543210'
+$env:ADMIN_PASSWORD = 'use-a-strong-server-only-password'
+$env:ADMIN_EMAIL = 'admin@example.com'
+$env:ADMIN_COOPERATIVE_ID = '<existing-cooperative-uuid>'
+npm run provision:admin --workspace=@sih/api
+```
+
+The command creates or promotes the specified mobile account, clears existing
+refresh sessions, and assigns `Cooperative.adminUserId` only when that
+cooperative has no different administrator. It is a compiled server command,
+not an HTTP endpoint, and these variables must never be supplied to the web
+application or committed.
+
 ## Database commands
 
 Prisma is configured with PostgreSQL and has an initial migration for identity, cooperative membership, skills, verification records, and certificates.

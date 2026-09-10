@@ -9,6 +9,7 @@ import { AuthorizationService } from './authorization/authorization.service';
 import { OwnershipGuard } from './guards/ownership.guard';
 import { CooperativeScopeGuard } from './guards/cooperative-scope.guard';
 import { CooperativeResourceScopeGuard } from './guards/cooperative-resource-scope.guard';
+import { AdminProvisioningService } from './admin-provisioning.service';
 
 @Module({
   imports: [JwtModule.register({})],
@@ -22,6 +23,7 @@ import { CooperativeResourceScopeGuard } from './guards/cooperative-resource-sco
     OwnershipGuard,
     CooperativeScopeGuard,
     CooperativeResourceScopeGuard,
+    AdminProvisioningService,
   ],
   exports: [
     AuthService,
@@ -33,6 +35,7 @@ import { CooperativeResourceScopeGuard } from './guards/cooperative-resource-sco
     CooperativeScopeGuard,
     CooperativeResourceScopeGuard,
     PrismaService,
+    AdminProvisioningService,
   ],
 })
 export class AuthModule {}

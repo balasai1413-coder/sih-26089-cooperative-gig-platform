@@ -6,6 +6,7 @@
     "build": "nest build",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
+    "provision:admin": "npx tsc -p tsconfig.build.json --incremental false && node dist/scripts/provision-admin.js",
     "typecheck": "tsc --noEmit",
     "test": "jest --config jest.config.cjs --runInBand"
   },
