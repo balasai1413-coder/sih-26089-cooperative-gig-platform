@@ -20,6 +20,39 @@ export class CooperativesController {
     return this.cooperativesService.listMine(user);
   }
 
+  @Get('me/demand/overview')
+  async getMyDemandOverview(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+    return this.cooperativesService.getMyDemandOverview(user, Number(days ?? 30));
+  }
+
+  @Get('me/demand/by-skill')
+  async getMyDemandBySkill(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+    return this.cooperativesService.getMyDemandBySkill(user, Number(days ?? 30));
+  }
+
+  @Get('me/demand/trends')
+  async getMyDemandTrends(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+    return this.cooperativesService.getMyDemandTrends(user, Number(days ?? 30));
+  }
+
+  @Get('me/demand/forecast')
+  async getMyDemandForecast(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+    return this.cooperativesService.getMyDemandForecast(user, Number(days ?? 30));
+  }
+
+  @Get('me/demand/capacity')
+  async getMyDemandCapacity(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+    return this.cooperativesService.getMyDemandCapacity(user, Number(days ?? 30));
+  }
+
+  @Get('me/demand/recommendations')
+  async getMyDemandRecommendations(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('days') days?: string,
+  ) {
+    return this.cooperativesService.getMyDemandRecommendations(user, Number(days ?? 30));
+  }
+
   @Get(':cooperativeId')
   @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
   async getMine(
@@ -27,6 +60,66 @@ export class CooperativesController {
     @Param('cooperativeId') cooperativeId: string,
   ) {
     return this.cooperativesService.getMine(user, cooperativeId);
+  }
+
+  @Get(':cooperativeId/demand/overview')
+  @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+  async getDemandOverview(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('cooperativeId') cooperativeId: string,
+    @Query('days') days?: string,
+  ) {
+    return this.cooperativesService.getDemandOverview(user, cooperativeId, Number(days ?? 30));
+  }
+
+  @Get(':cooperativeId/demand/by-skill')
+  @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+  async getDemandBySkill(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('cooperativeId') cooperativeId: string,
+    @Query('days') days?: string,
+  ) {
+    return this.cooperativesService.getDemandBySkill(user, cooperativeId, Number(days ?? 30));
+  }
+
+  @Get(':cooperativeId/demand/trends')
+  @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+  async getDemandTrends(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('cooperativeId') cooperativeId: string,
+    @Query('days') days?: string,
+  ) {
+    return this.cooperativesService.getDemandTrends(user, cooperativeId, Number(days ?? 30));
+  }
+
+  @Get(':cooperativeId/demand/forecast')
+  @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+  async getDemandForecast(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('cooperativeId') cooperativeId: string,
+    @Query('days') days?: string,
+  ) {
+    return this.cooperativesService.getDemandForecast(user, cooperativeId, Number(days ?? 30));
+  }
+
+  @Get(':cooperativeId/demand/capacity')
+  @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+  async getDemandCapacity(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('cooperativeId') cooperativeId: string,
+    @Query('days') days?: string,
+  ) {
+    return this.cooperativesService.getDemandCapacity(user, cooperativeId, Number(days ?? 30));
+  }
+
+  @Get(':cooperativeId/demand/recommendations')
+  @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+  async getDemandRecommendations(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('cooperativeId') cooperativeId: string,
+    @Query('days') days?: string,
+  ) {
+    return this.cooperativesService.getDemandRecommendations(user, cooperativeId, Number(days ?? 30));
   }
 
   @Patch(':cooperativeId')

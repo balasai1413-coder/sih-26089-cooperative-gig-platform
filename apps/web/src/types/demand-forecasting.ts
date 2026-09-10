@@ -48,3 +48,70 @@ export interface DemandForecastFilters {
   categoryId?: string;
   location?: string;
 }
+
+export interface CooperativeDemandOverview {
+  cooperativeId: string;
+  periodDays: number;
+  generatedAt: string;
+  status: string;
+  dataStatus: string;
+  totalHistoricalDemand: number;
+  forecastDemand: number;
+  averageDailyDemand: number;
+  trend: string;
+  highDemandSkills: Array<{
+    skillId: string;
+    skillName: string;
+    predictedDemand: number;
+    historicalDemand: number;
+    trend: string;
+    availableQualifiedWorkers: number;
+  }>;
+  availableQualifiedWorkers: number;
+  capacityStatus: 'SUFFICIENT' | 'INSUFFICIENT';
+}
+
+export interface CooperativeDemandBySkillRow {
+  skillId: string;
+  skillName: string;
+  historicalDemand: number;
+  forecastDemand: number;
+  trend: string;
+  availableQualifiedWorkers: number;
+  capacityStatus: 'SHORTAGE' | 'SUFFICIENT';
+}
+
+export interface CooperativeDemandTrends {
+  cooperativeId: string;
+  periodDays: number;
+  generatedAt: string;
+  dataPoints: Array<{
+    date: string;
+    demand: number;
+  }>;
+}
+
+export interface CooperativeDemandCapacity {
+  cooperativeId: string;
+  periodDays: number;
+  generatedAt: string;
+  totalVerifiedWorkers: number;
+  forecastDemand: number;
+  bySkill: Array<{
+    skillId: string;
+    skillName: string;
+    verifiedWorkers: number;
+    forecastDemand: number;
+    capacityStatus: 'SHORTAGE' | 'SUFFICIENT';
+  }>;
+}
+
+export interface CooperativeDemandRecommendation {
+  skillId: string;
+  skillName: string;
+  predictedDemand: number;
+  availableWorkers: number;
+  recommendedWorkers: number;
+  severity: 'SHORTAGE' | 'SUFFICIENT';
+  reason: string;
+}
