@@ -12,7 +12,9 @@ import { BookingsModule } from './bookings/bookings.module';
 import { VerificationModule } from './verification/verification.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { WelfareModule } from './welfare/welfare.module';
 import { DemandForecastingModule } from './demand-forecasting/demand-forecasting.module';
+import { FederationsModule } from './federations/federations.module';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { DemandForecastingModule } from './demand-forecasting/demand-forecasting
     BookingsModule,
     CooperativesModule,
     DemandForecastingModule,
+    FederationsModule,
     MatchingModule,
     NotificationsModule,
     PaymentsModule,
@@ -29,6 +32,7 @@ import { DemandForecastingModule } from './demand-forecasting/demand-forecasting
     SkillsModule,
     WorkersModule,
     VerificationModule,
+    WelfareModule,
   ],
   controllers: [HealthController],
 })
