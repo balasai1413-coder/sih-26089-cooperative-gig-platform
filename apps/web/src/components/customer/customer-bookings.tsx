@@ -238,7 +238,14 @@ export function CustomerBookings() {
               <GlassCard key={booking.id} className="member-card" role="listitem">
                 <div className="member-card__title">
                   <strong>{booking.serviceRequest.title}</strong>
-                  <Badge tone={statusTone[booking.status]}>{booking.status}</Badge>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <Badge tone={statusTone[booking.status]}>{booking.status}</Badge>
+                    {booking.serviceRequest.priority === 'EMERGENCY' ? (
+                      <Badge tone="danger">EMERGENCY</Badge>
+                    ) : (
+                      <Badge tone="cyan">NORMAL</Badge>
+                    )}
+                  </div>
                 </div>
 
                 <p className="member-card__meta">

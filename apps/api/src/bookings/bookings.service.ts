@@ -32,6 +32,7 @@ const bookingInclude = {
       description: true,
       location: true,
       status: true,
+      priority: true,
       preferredDateTime: true,
       skill: {
         select: {
@@ -174,6 +175,7 @@ export class BookingsService {
         description: booking.serviceRequest.description,
         location: booking.serviceRequest.location,
         status: booking.serviceRequest.status,
+        priority: booking.serviceRequest.priority,
         preferredDateTime: booking.serviceRequest.preferredDateTime,
         skill: booking.serviceRequest.skill
           ? {
@@ -327,10 +329,12 @@ export class BookingsService {
       await this.createBookingNotification(
         worker.user.id,
         NotificationType.BOOKING_CREATED,
-        'New Booking',
-        `A new booking has been created for ${request.title}. Please review and accept or reject.`,
+        request.priority === 'EMERGENCY' ? 'Emergency Booking' : 'New Booking',
+        request.priority === 'EMERGENCY'
+          ? `An emergency booking has been created for ${request.title}. Please review and accept or reject immediately.`
+          : `A new booking has been created for ${request.title}. Please review and accept or reject.`,
         `booking:${created.id}:created`,
-        { bookingId: created.id, serviceRequestId: request.id },
+        { bookingId: created.id, serviceRequestId: request.id, priority: request.priority },
       );
 
       return this.toSafeDto(created);

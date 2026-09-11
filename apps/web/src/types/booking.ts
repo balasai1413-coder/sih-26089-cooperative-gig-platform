@@ -20,6 +20,7 @@ export interface Booking {
     description: string | null;
     location: string | null;
     status: string;
+    priority: 'NORMAL' | 'EMERGENCY';
     preferredDateTime: string | null;
     skill: { id: string; name: string } | null;
   };

@@ -88,6 +88,7 @@ export function CustomerRequests() {
         description: String(form.get('description') || '') || null,
         location: String(form.get('location') || '') || null,
         preferredDateTime: String(form.get('preferredDateTime') || '') || null,
+        priority: (String(form.get('priority') || 'NORMAL') as 'NORMAL' | 'EMERGENCY') || 'NORMAL',
       });
       setRequests((prev) => [created, ...prev]);
       setCreating(false);
@@ -111,6 +112,7 @@ export function CustomerRequests() {
         description: String(form.get('description') || '') || null,
         location: String(form.get('location') || '') || null,
         preferredDateTime: String(form.get('preferredDateTime') || '') || null,
+        priority: (String(form.get('priority') || 'NORMAL') as 'NORMAL' | 'EMERGENCY') || 'NORMAL',
       });
       setRequests((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setEditing(null);
@@ -209,6 +211,11 @@ export function CustomerRequests() {
               <div className="member-card__title">
                 <strong>{request.title}</strong>
                 <Badge tone={statusTone[request.status]}>{request.status}</Badge>
+                {request.priority === 'EMERGENCY' ? (
+                  <Badge tone="danger">EMERGENCY</Badge>
+                ) : (
+                  <Badge tone="cyan">NORMAL</Badge>
+                )}
               </div>
               <p className="member-card__meta">
                 {request.skill ? request.skill.name : 'Skill no longer listed'}
@@ -327,6 +334,14 @@ function RequestForm({
         type="datetime-local"
         defaultValue={request?.preferredDateTime ? request.preferredDateTime.slice(0, 16) : ''}
       />
+      <Select
+        label="Priority"
+        name="priority"
+        defaultValue={request?.priority ?? 'NORMAL'}
+      >
+        <option value="NORMAL">Normal Service</option>
+        <option value="EMERGENCY">Emergency Service</option>
+      </Select>
       {error ? <p className="form-error">{error}</p> : null}
       <div className="studio-form__actions">
         <Button type="submit" disabled={busy}>

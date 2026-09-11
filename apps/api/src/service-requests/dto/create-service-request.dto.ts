@@ -1,5 +1,14 @@
 import { Transform } from 'class-transformer';
-import { IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { ServiceRequestPriority } from '@prisma/client';
 
 const nullableText = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() || null : value;
@@ -29,4 +38,8 @@ export class CreateServiceRequestDto {
   @IsOptional()
   @IsDateString()
   preferredDateTime?: string | null;
+
+  @IsOptional()
+  @IsEnum(ServiceRequestPriority)
+  priority?: ServiceRequestPriority;
 }

@@ -1,10 +1,12 @@
 export type ServiceRequestStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED' | 'CANCELLED';
+export type ServiceRequestPriority = 'NORMAL' | 'EMERGENCY';
 
 export interface ServiceRequest {
   id: string;
   title: string;
   description: string | null;
   status: ServiceRequestStatus;
+  priority: ServiceRequestPriority;
   location: string | null;
   preferredDateTime: string | null;
   createdAt: string;
@@ -18,6 +20,7 @@ export interface CreateServiceRequestPayload {
   description?: string | null;
   location?: string | null;
   preferredDateTime?: string | null;
+  priority?: ServiceRequestPriority;
 }
 
 export interface UpdateServiceRequestPayload {
@@ -25,6 +28,7 @@ export interface UpdateServiceRequestPayload {
   description?: string | null;
   location?: string | null;
   preferredDateTime?: string | null;
+  priority?: ServiceRequestPriority;
 }
 
 /** Step 7 — deterministic, explainable worker match returned by the backend. */

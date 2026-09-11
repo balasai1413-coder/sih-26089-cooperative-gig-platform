@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ServiceRequestStatus, SkillVerificationStatus, WorkerAvailability } from '@prisma/client';
+import {
+  ServiceRequestPriority,
+  ServiceRequestStatus,
+  SkillVerificationStatus,
+  WorkerAvailability,
+} from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { ReviewsService } from '../reviews/reviews.service';
 import { AuthenticatedUser } from '../auth/auth.types';
@@ -68,7 +73,14 @@ export class WorkerMatchingService {
 
     const request = await this.prisma.serviceRequest.findUnique({
       where: { id: requestId },
-      select: { id: true, customerId: true, skillId: true, status: true, location: true },
+      select: {
+        id: true,
+        customerId: true,
+        skillId: true,
+        status: true,
+        priority: true,
+        location: true,
+      },
     });
     if (!request) {
       throw new NotFoundException('Service request is not available');
@@ -119,8 +131,30 @@ export class WorkerMatchingService {
       },
     });
 
-    const matches: ComputedMatch[] = [];
+    const coopCounts = new Map<string, number>();
     for (const ws of workerSkills) {
+      for (const membership of ws.worker.memberships) {
+        const cooperativeId = membership.cooperative?.id;
+        if (!cooperativeId) continue;
+        coopCounts.set(cooperativeId, (coopCounts.get(cooperativeId) ?? 0) + 1);
+      }
+    }
+
+    const selectedCooperativeId =
+      coopCounts.size > 0
+        ? [...coopCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0]
+        : null;
+
+    const boundaryWorkerSkills = selectedCooperativeId
+      ? workerSkills.filter((ws) =>
+          ws.worker.memberships.some(
+            (membership) => membership.cooperative?.id === selectedCooperativeId,
+          ),
+        )
+      : workerSkills;
+
+    const matches: ComputedMatch[] = [];
+    for (const ws of boundaryWorkerSkills) {
       const worker = ws.worker;
       // Respect the existing availability model: unavailable workers are excluded.
       if (worker.availability === WorkerAvailability.UNAVAILABLE) {
@@ -136,8 +170,8 @@ export class WorkerMatchingService {
         request.location,
         worker.location,
       );
-      const score = this.calculateScore(ws, locationMatch);
-      const reasons = this.buildReasons(ws, locationReason);
+      const score = this.calculateScore(ws, locationMatch, request.priority);
+      const reasons = this.buildReasons(ws, locationReason, request.priority);
 
       matches.push({
         workerId: worker.id,
@@ -306,17 +340,20 @@ export class WorkerMatchingService {
   private calculateScore(
     ws: { experienceYears: number; proficiency: string },
     locationMatch: boolean,
+    requestPriority: ServiceRequestPriority,
   ): number {
     let score = SKILL_VERIFIED_BASE;
     score += Math.min(ws.experienceYears, 20) * 2;
     score += PROFICIENCY_POINTS[ws.proficiency] ?? 0;
     if (locationMatch) score += 15;
+    if (requestPriority === ServiceRequestPriority.EMERGENCY) score += 25;
     return score;
   }
 
   private buildReasons(
     ws: { experienceYears: number; proficiency: string },
     locationReason: string | null,
+    requestPriority: ServiceRequestPriority,
   ): string[] {
     const reasons: string[] = ['Verified required skill'];
     if (ws.experienceYears > 0) {
@@ -325,6 +362,9 @@ export class WorkerMatchingService {
     reasons.push(`Proficiency: ${ws.proficiency.toLowerCase()}`);
     if (locationReason) {
       reasons.push(locationReason);
+    }
+    if (requestPriority === ServiceRequestPriority.EMERGENCY) {
+      reasons.push('Emergency request priority boosted this match');
     }
     return reasons;
   }

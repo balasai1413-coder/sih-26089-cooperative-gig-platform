@@ -75,6 +75,11 @@ enum ServiceRequestStatus {
   CANCELLED
 }
 
+enum ServiceRequestPriority {
+  NORMAL
+  EMERGENCY
+}
+
 enum BookingStatus {
   PENDING_WORKER_ACCEPTANCE
   ACCEPTED
@@ -343,18 +348,19 @@ model Certificate {
 }
 
 model ServiceRequest {
-  id                String               @id @default(uuid()) @db.Uuid
-  customerId        String               @db.Uuid
-  skillId           String?              @db.Uuid
-  title             String               @db.VarChar(200)
-  description       String?              @db.VarChar(2000)
-  status            ServiceRequestStatus @default(OPEN)
-  location          String?              @db.VarChar(300)
+  id                String                 @id @default(uuid()) @db.Uuid
+  customerId        String                 @db.Uuid
+  skillId           String?                @db.Uuid
+  title             String                 @db.VarChar(200)
+  description       String?                @db.VarChar(2000)
+  status            ServiceRequestStatus   @default(OPEN)
+  priority          ServiceRequestPriority @default(NORMAL)
+  location          String?                @db.VarChar(300)
   preferredDateTime DateTime?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  customer          Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  skill             Skill?               @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  customer          Customer               @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  skill             Skill?                 @relation(fields: [skillId], references: [id], onDelete: SetNull)
   bookings          Booking[]
 
   @@index([customerId])

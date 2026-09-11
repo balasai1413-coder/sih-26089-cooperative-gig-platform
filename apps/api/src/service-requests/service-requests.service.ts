@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, ServiceRequestStatus } from '@prisma/client';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, ServiceRequestPriority, ServiceRequestStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { CreateServiceRequestDto } from './dto/create-service-request.dto';
@@ -48,6 +48,7 @@ export class ServiceRequestsService {
       title: request.title,
       description: request.description,
       status: request.status,
+      priority: request.priority,
       location: request.location,
       preferredDateTime: request.preferredDateTime,
       createdAt: request.createdAt,
@@ -67,6 +68,8 @@ export class ServiceRequestsService {
       throw new NotFoundException('Skill is not available in the catalog');
     }
 
+    const priority = dto.priority ?? ServiceRequestPriority.NORMAL;
+
     const request = await this.prisma.serviceRequest.create({
       data: {
         customerId,
@@ -75,6 +78,7 @@ export class ServiceRequestsService {
         description: dto.description ?? null,
         location: dto.location ?? null,
         preferredDateTime: dto.preferredDateTime ? new Date(dto.preferredDateTime) : null,
+        priority,
       },
       include: requestInclude,
     });
@@ -98,7 +102,11 @@ export class ServiceRequestsService {
 
   async updateMyRequest(user: AuthenticatedUser, requestId: string, dto: UpdateServiceRequestDto) {
     const customerId = await this.resolveCustomerId(user);
-    await this.getOwnedRequest(customerId, requestId);
+    const existing = await this.getOwnedRequest(customerId, requestId);
+
+    if (dto.priority !== undefined && existing.status !== ServiceRequestStatus.OPEN) {
+      throw new BadRequestException('Priority can only be updated while the request is OPEN');
+    }
 
     const request = await this.prisma.serviceRequest.update({
       where: { id: requestId },
@@ -111,6 +119,7 @@ export class ServiceRequestsService {
               preferredDateTime: dto.preferredDateTime ? new Date(dto.preferredDateTime) : null,
             }
           : {}),
+        ...(dto.priority !== undefined ? { priority: dto.priority } : {}),
       },
       include: requestInclude,
     });
