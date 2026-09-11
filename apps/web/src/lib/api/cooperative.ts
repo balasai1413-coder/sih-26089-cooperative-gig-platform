@@ -9,6 +9,7 @@ import type {
   CreateSkillPayload,
   UpdateSkillPayload,
   UpdateCooperativePayload,
+  DemandOverviewResponse,
 } from '@/types/cooperative';
 
 function withToken(accessToken: string, method?: string, body?: unknown) {
@@ -73,5 +74,10 @@ export const cooperativeApi = {
     apiRequest<AdminSkill>(
       `/skills/${skillId}/status`,
       withToken(accessToken, 'PATCH', { active }),
+    ),
+  demandOverview: (accessToken: string, cooperativeId: string, days = 30) =>
+    apiRequest<DemandOverviewResponse>(
+      `/cooperatives/${cooperativeId}/demand/overview?days=${days}`,
+      withToken(accessToken),
     ),
 };

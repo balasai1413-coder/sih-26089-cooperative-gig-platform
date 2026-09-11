@@ -1,5 +1,10 @@
+<<<<<<< Updated upstream
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, SkillVerificationStatus } from '@prisma/client';
+=======
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+>>>>>>> Stashed changes
 import { PrismaService } from '../database/prisma.service';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { DemandForecastingService } from '../demand-forecasting/demand-forecasting.service';
@@ -158,6 +163,7 @@ export class CooperativesService {
     return this.toMember(membership, { detailed: true });
   }
 
+<<<<<<< Updated upstream
   async getMyDemandOverview(actor: AuthenticatedUser, days = 30) {
     const cooperativeId = await this.getMyCooperativeId(actor);
     return this.getDemandOverview(actor, cooperativeId, days);
@@ -212,11 +218,40 @@ export class CooperativesService {
       })),
       availableQualifiedWorkers: snapshot.capacity.totalVerifiedWorkers,
       capacityStatus: snapshot.capacity.totalVerifiedWorkers > 0 ? 'SUFFICIENT' : 'INSUFFICIENT',
+=======
+  async getDemandOverview(actor: AuthenticatedUser, cooperativeId: string, days = 30) {
+    await this.assertAdminOf(actor, cooperativeId);
+    const normalizedDays = this.normalizeForecastDays(days);
+    const snapshot = await this.buildDemandSnapshot(cooperativeId, normalizedDays);
+    const forecast = snapshot.forecast.map((entry) => ({
+      ...entry,
+      cooperativeId,
+      engine: 'deterministic-statistical',
+      status: entry.status,
+    }));
+    const overallStatus = snapshot.forecast.some((entry) => entry.status === 'SUFFICIENT_DATA')
+      ? 'SUFFICIENT_DATA'
+      : 'INSUFFICIENT_DATA';
+    const totalPredictedDemand = forecast.reduce((sum, item) => sum + item.predictedDemand, 0);
+
+    return {
+      cooperativeId,
+      forecastPeriodDays: normalizedDays,
+      generatedAt: new Date().toISOString(),
+      status: overallStatus,
+      totalHistoricalRequests: snapshot.totalHistoricalRequests,
+      averageDailyDemand: snapshot.averageDailyDemand,
+      emergencyShare: snapshot.emergencyShare,
+      totalPredictedDemand,
+      forecast,
+      recommendations: await this.buildRecommendations(cooperativeId, normalizedDays),
+>>>>>>> Stashed changes
     };
   }
 
   async getDemandBySkill(actor: AuthenticatedUser, cooperativeId: string, days = 30) {
     await this.assertAdminOf(actor, cooperativeId);
+<<<<<<< Updated upstream
     const snapshot = await this.buildDemandSnapshot(cooperativeId, days);
     const groups = new Map<string, { skillId: string; skillName: string; historicalDemand: number; forecastDemand: number; trend: string; availableQualifiedWorkers: number; capacityStatus: 'SHORTAGE' | 'SUFFICIENT' }>();
 
@@ -270,10 +305,30 @@ export class CooperativesService {
       ...row,
       capacityStatus: row.availableQualifiedWorkers > 0 ? 'SUFFICIENT' : 'SHORTAGE',
     }));
+=======
+    const normalizedDays = this.normalizeForecastDays(days);
+    const snapshot = await this.buildDemandSnapshot(cooperativeId, normalizedDays);
+    return {
+      cooperativeId,
+      forecastPeriodDays: normalizedDays,
+      generatedAt: new Date().toISOString(),
+      records: snapshot.forecast.map((entry) => ({
+        skillId: entry.skillId,
+        skillName: entry.skillName,
+        totalRequests: entry.historicalDemand,
+        emergencyRequests: entry.emergencyDemand,
+        completionRate: entry.completionRate,
+        predictedDemand: entry.predictedDemand,
+        confidence: entry.confidence,
+        confidenceLevel: entry.confidenceLevel,
+      })),
+    };
+>>>>>>> Stashed changes
   }
 
   async getDemandTrends(actor: AuthenticatedUser, cooperativeId: string, days = 30) {
     await this.assertAdminOf(actor, cooperativeId);
+<<<<<<< Updated upstream
     const snapshot = await this.buildDemandSnapshot(cooperativeId, days);
     const trendMap = new Map<string, number>();
     const start = startOfUtcDay(new Date());
@@ -293,21 +348,50 @@ export class CooperativesService {
         date,
         demand,
       })),
+=======
+    const normalizedDays = this.normalizeForecastDays(days);
+    const snapshot = await this.buildDemandSnapshot(cooperativeId, normalizedDays);
+    return {
+      cooperativeId,
+      forecastPeriodDays: normalizedDays,
+      generatedAt: new Date().toISOString(),
+      series: snapshot.trendSeries,
+      summary: {
+        averageDailyDemand: snapshot.averageDailyDemand,
+        emergencyShare: snapshot.emergencyShare,
+        trendDirection: snapshot.trendDirection,
+      },
+>>>>>>> Stashed changes
     };
   }
 
   async getDemandForecast(actor: AuthenticatedUser, cooperativeId: string, days = 30) {
     await this.assertAdminOf(actor, cooperativeId);
+<<<<<<< Updated upstream
     const forecastStart = startOfUtcDay(addUtcDays(new Date(), 1));
     const forecastEnd = startOfUtcDay(addUtcDays(forecastStart, Math.max(6, days - 1)));
     return this.demandForecasting.getForecast(cooperativeId, {
       forecastStart: forecastStart.toISOString().slice(0, 10),
       forecastEnd: forecastEnd.toISOString().slice(0, 10),
     });
+=======
+    const normalizedDays = this.normalizeForecastDays(days);
+    const snapshot = await this.buildDemandSnapshot(cooperativeId, normalizedDays);
+    return {
+      cooperativeId,
+      forecastPeriodDays: normalizedDays,
+      status: snapshot.forecast.some((entry) => entry.status === 'SUFFICIENT_DATA')
+        ? 'SUFFICIENT_DATA'
+        : 'INSUFFICIENT_DATA',
+      generatedAt: new Date().toISOString(),
+      forecast: snapshot.forecast,
+    };
+>>>>>>> Stashed changes
   }
 
   async getDemandCapacity(actor: AuthenticatedUser, cooperativeId: string, days = 30) {
     await this.assertAdminOf(actor, cooperativeId);
+<<<<<<< Updated upstream
     const snapshot = await this.buildDemandSnapshot(cooperativeId, days);
     return {
       cooperativeId,
@@ -324,11 +408,21 @@ export class CooperativesService {
         )?.predictedDemand ?? 0,
         capacityStatus: item.verifiedWorkers > 0 ? 'SUFFICIENT' : 'SHORTAGE',
       })),
+=======
+    const normalizedDays = this.normalizeForecastDays(days);
+    const snapshot = await this.buildDemandSnapshot(cooperativeId, normalizedDays);
+    return {
+      cooperativeId,
+      forecastPeriodDays: normalizedDays,
+      generatedAt: new Date().toISOString(),
+      capacity: snapshot.capacityRows,
+>>>>>>> Stashed changes
     };
   }
 
   async getDemandRecommendations(actor: AuthenticatedUser, cooperativeId: string, days = 30) {
     await this.assertAdminOf(actor, cooperativeId);
+<<<<<<< Updated upstream
     const snapshot = await this.buildDemandSnapshot(cooperativeId, days);
     const recommendations = snapshot.forecast.highDemandSkills
       .filter((skill) => (skill.predictedDemand ?? 0) > 0)
@@ -387,10 +481,64 @@ export class CooperativesService {
             skills: {
               where: { verificationStatus: SkillVerificationStatus.VERIFIED },
               select: { skillId: true, skill: { select: { id: true, name: true } } },
+=======
+    const normalizedDays = this.normalizeForecastDays(days);
+    return {
+      cooperativeId,
+      forecastPeriodDays: normalizedDays,
+      generatedAt: new Date().toISOString(),
+      recommendations: await this.buildRecommendations(cooperativeId, normalizedDays),
+    };
+  }
+
+  private normalizeForecastDays(days: number): number {
+    const normalized = Number(days ?? 30);
+    if (!Number.isFinite(normalized) || normalized < 7 || normalized > 180) {
+      throw new BadRequestException('Forecast days must be between 7 and 180');
+    }
+    return normalized;
+  }
+
+  private async buildRecommendations(cooperativeId: string, days: number) {
+    const snapshot = await this.buildDemandSnapshot(cooperativeId, days);
+    return snapshot.capacityRows.map((row) => ({
+      skillId: row.skillId,
+      skillName: row.skillName,
+      predictedDemand: row.predictedDemand,
+      availableWorkers: row.availableWorkers,
+      recommendedWorkers: row.recommendedWorkers,
+      capacityGap: row.capacityGap,
+      status: row.capacityGap > 0 ? 'SHORTAGE' : 'SUFFICIENT',
+      reasons: [
+        row.trend > 0 ? 'Demand trend is rising over the last observation window.' : 'Demand is stable across the recent observation window.',
+        row.emergencyDemand > 0 ? 'Emergency demand is materially contributing to the required workforce.' : 'Normal demand remains the primary driver of capacity requirements.',
+        row.availableWorkers < row.recommendedWorkers
+          ? 'Verified cooperative capacity is below the recommended staffing threshold.'
+          : 'Verified cooperative capacity is adequate against predicted demand.',
+      ],
+    }));
+  }
+
+  private async buildDemandSnapshot(cooperativeId: string, days: number) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+
+    const skillIds = await this.prisma.workerSkill.findMany({
+      where: {
+        verificationStatus: 'VERIFIED',
+        worker: {
+          user: { isActive: true },
+          memberships: {
+            some: {
+              cooperativeId,
+              leftAt: null,
+              cooperative: { status: 'ACTIVE' },
+>>>>>>> Stashed changes
             },
           },
         },
       },
+<<<<<<< Updated upstream
     });
 
     const bySkill = new Map<string, { skillId: string; skillName: string; verifiedWorkers: number }>();
@@ -435,6 +583,157 @@ export class CooperativesService {
     return cooperative.id;
   }
 
+=======
+      select: { skillId: true },
+      distinct: ['skillId'],
+    });
+
+    const relevantSkillIds = skillIds.map((entry) => entry.skillId);
+    const requestRecords = relevantSkillIds.length
+      ? await this.prisma.serviceRequest.findMany({
+          where: { skillId: { in: relevantSkillIds }, createdAt: { gte: cutoff } },
+          select: {
+            id: true,
+            skillId: true,
+            status: true,
+            priority: true,
+            createdAt: true,
+            skill: { select: { id: true, name: true, category: { select: { name: true } } } },
+          },
+          orderBy: { createdAt: 'asc' },
+        })
+      : [];
+
+    const groupedBySkill = new Map<string, { skillId: string; skillName: string; records: typeof requestRecords }>();
+    for (const record of requestRecords) {
+      const skillId = record.skillId ?? '';
+      if (!skillId) continue;
+      const skillName = record.skill?.name ?? 'Unknown skill';
+      const bucket = groupedBySkill.get(skillId) ?? { skillId, skillName, records: [] as typeof requestRecords };
+      bucket.records.push(record);
+      groupedBySkill.set(skillId, bucket);
+    }
+
+    const forecast = await Promise.all(
+      Array.from(groupedBySkill.values()).map(async (entry) => {
+        const records = entry.records;
+        const total = records.length;
+        const emergencyDemand = records.filter((item) => item.priority === 'EMERGENCY').length;
+        const completed = records.filter((item) => item.status === 'CLOSED').length;
+        const cancelled = records.filter((item) => item.status === 'CANCELLED').length;
+        const open = records.filter((item) => item.status === 'OPEN').length;
+        const avgDaily = total / Math.max(days, 1);
+        const latestWindowStart = new Date();
+        latestWindowStart.setDate(latestWindowStart.getDate() - 7);
+        const olderWindowStart = new Date();
+        olderWindowStart.setDate(olderWindowStart.getDate() - 14);
+        const recentDemand = records.filter((item) => item.createdAt >= latestWindowStart).length;
+        const previousDemand = records.filter(
+          (item) => item.createdAt >= olderWindowStart && item.createdAt < latestWindowStart,
+        ).length;
+        const trend = previousDemand === 0 ? (recentDemand > 0 ? 1 : 0) : (recentDemand - previousDemand) / previousDemand;
+        const predictedDemand = Math.max(0, Math.round(avgDaily + avgDaily * Math.max(trend, 0) + emergencyDemand * 0.75));
+        const availableWorkerRows = await this.prisma.workerSkill.findMany({
+          where: {
+            skillId: entry.skillId,
+            verificationStatus: 'VERIFIED',
+            worker: {
+              user: { isActive: true },
+              memberships: {
+                some: {
+                  cooperativeId,
+                  leftAt: null,
+                  cooperative: { status: 'ACTIVE' },
+                },
+              },
+            },
+          },
+          select: { id: true },
+        });
+        const availableWorkers = availableWorkerRows.length;
+        const recommendedWorkers = Math.max(1, Math.ceil(predictedDemand / 3));
+        const capacityGap = Math.max(0, recommendedWorkers - availableWorkers);
+        const completionRate = total === 0 ? 0 : completed / total;
+        const cancellationRate = total === 0 ? 0 : cancelled / total;
+        const confidenceRaw = Math.min(
+          1,
+          0.2 + Math.min(total / 15, 0.4) + (records.length >= 4 ? 0.2 : 0) + (Math.abs(trend) < 0.5 ? 0.2 : 0),
+        );
+        const confidence = Number(confidenceRaw.toFixed(2));
+        const confidenceLevel = confidence >= 0.8 ? 'HIGH' : confidence >= 0.5 ? 'MEDIUM' : 'LOW';
+        const status = total >= 3 ? 'SUFFICIENT_DATA' : 'INSUFFICIENT_DATA';
+
+        return {
+          skillId: entry.skillId,
+          skillName: entry.skillName,
+          historicalDemand: total,
+          emergencyDemand,
+          completionRate,
+          cancellationRate,
+          trend,
+          predictedDemand,
+          availableWorkers,
+          recommendedWorkers,
+          capacityGap,
+          confidence,
+          confidenceLevel,
+          status,
+          reasons: [
+            trend > 0 ? 'Recent demand is increasing relative to the prior period.' : 'Recent demand is stable or declining versus the prior period.',
+            emergencyDemand > 0 ? 'Emergency demand is contributing to the observed workload.' : 'Normal demand is driving the forecast profile.',
+          ],
+          open,
+          completed,
+          cancelled,
+        };
+      }),
+    );
+
+    const totalHistoricalRequests = requestRecords.length;
+    const emergencyShare = totalHistoricalRequests === 0 ? 0 : requestRecords.filter((item) => item.priority === 'EMERGENCY').length / totalHistoricalRequests;
+    const averageDailyDemand = totalHistoricalRequests === 0 ? 0 : totalHistoricalRequests / Math.max(days, 1);
+    const trendDirection = forecast.length
+      ? forecast.reduce((sum, item) => sum + item.trend, 0) >= 0
+        ? 'UPWARD'
+        : 'DOWNWARD'
+      : 'STABLE';
+
+    const trendSeries = Array.from({ length: 7 }, (_, index) => {
+      const currentDate = new Date();
+      currentDate.setDate(currentDate.getDate() - (6 - index));
+      const dayKey = currentDate.toISOString().slice(0, 10);
+      const demand = requestRecords.filter((item) => item.createdAt.toISOString().slice(0, 10) === dayKey).length;
+      return {
+        date: dayKey,
+        demand,
+      };
+    });
+
+    const capacityRows = forecast.map((entry) => ({
+      skillId: entry.skillId,
+      skillName: entry.skillName,
+      predictedDemand: entry.predictedDemand,
+      availableWorkers: entry.availableWorkers,
+      activeWorkload: entry.historicalDemand,
+      recommendedWorkers: entry.recommendedWorkers,
+      capacityGap: entry.capacityGap,
+      confidence: entry.confidence,
+      trend: entry.trend,
+      emergencyDemand: entry.emergencyDemand,
+    }));
+
+    return {
+      totalHistoricalRequests,
+      averageDailyDemand,
+      emergencyShare,
+      trendDirection,
+      trendSeries,
+      forecast,
+      capacityRows,
+    };
+  }
+
+>>>>>>> Stashed changes
   private async assertAdminOf(actor: AuthenticatedUser, cooperativeId: string) {
     const cooperative = await this.prisma.cooperative.findFirst({
       where: { id: cooperativeId, adminUserId: actor.id },

@@ -12,9 +12,13 @@ import { BookingsModule } from './bookings/bookings.module';
 import { VerificationModule } from './verification/verification.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+<<<<<<< Updated upstream
 import { WelfareModule } from './welfare/welfare.module';
 import { DemandForecastingModule } from './demand-forecasting/demand-forecasting.module';
 import { FederationsModule } from './federations/federations.module';
+=======
+import { DemandForecastingModule } from './demand-forecasting/demand-forecasting.module';
+>>>>>>> Stashed changes
 
 @Module({
   imports: [
@@ -23,7 +27,10 @@ import { FederationsModule } from './federations/federations.module';
     BookingsModule,
     CooperativesModule,
     DemandForecastingModule,
+<<<<<<< Updated upstream
     FederationsModule,
+=======
+>>>>>>> Stashed changes
     MatchingModule,
     NotificationsModule,
     PaymentsModule,

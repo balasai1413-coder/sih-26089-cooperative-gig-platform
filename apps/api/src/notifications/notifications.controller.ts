@@ -52,8 +52,13 @@ export class NotificationsController {
    * Mark all unread notifications as read for the current user.
    */
   @Patch('read-all')
+<<<<<<< Updated upstream
   async markAllAsRead(@CurrentUser() user: AuthenticatedUser, @Body() _dto: MarkAllAsReadDto) {
     void _dto;
+=======
+  async markAllAsRead(@CurrentUser() user: AuthenticatedUser, @Body() dto: MarkAllAsReadDto) {
+    void dto;
+>>>>>>> Stashed changes
     return this.notificationsService.markAllAsRead(user);
   }
 
@@ -87,9 +92,13 @@ export class NotificationsController {
   async markAsRead(
     @CurrentUser() user: AuthenticatedUser,
     @Param('notificationId', ParseUUIDPipe) notificationId: string,
-    @Body() _dto: MarkAsReadDto,
+    @Body() dto: MarkAsReadDto,
   ) {
+<<<<<<< Updated upstream
     void _dto;
+=======
+    void dto;
+>>>>>>> Stashed changes
     try {
       return await this.notificationsService.markAsRead(user, notificationId);
     } catch (error) {

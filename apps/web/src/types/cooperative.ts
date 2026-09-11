@@ -103,3 +103,43 @@ export interface UpdateCooperativePayload {
   contactPhone?: string | null;
   status?: CooperativeStatus;
 }
+
+export interface DemandForecastEntry {
+  skillId: string;
+  skillName: string;
+  historicalDemand: number;
+  emergencyDemand: number;
+  completionRate: number;
+  cancellationRate: number;
+  trend: number;
+  predictedDemand: number;
+  availableWorkers: number;
+  recommendedWorkers: number;
+  capacityGap: number;
+  confidence: number;
+  confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  status: 'SUFFICIENT_DATA' | 'INSUFFICIENT_DATA';
+  reasons: string[];
+}
+
+export interface DemandOverviewResponse {
+  cooperativeId: string;
+  forecastPeriodDays: number;
+  generatedAt: string;
+  status: 'SUFFICIENT_DATA' | 'INSUFFICIENT_DATA';
+  totalHistoricalRequests: number;
+  averageDailyDemand: number;
+  emergencyShare: number;
+  totalPredictedDemand: number;
+  forecast: DemandForecastEntry[];
+  recommendations: Array<{
+    skillId: string;
+    skillName: string;
+    predictedDemand: number;
+    availableWorkers: number;
+    recommendedWorkers: number;
+    capacityGap: number;
+    status: 'SHORTAGE' | 'SUFFICIENT';
+    reasons: string[];
+  }>;
+}

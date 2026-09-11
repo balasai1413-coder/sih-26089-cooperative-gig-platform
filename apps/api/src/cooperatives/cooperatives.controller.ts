@@ -22,26 +22,59 @@ export class CooperativesController {
 
   @Get('me/demand/overview')
   async getMyDemandOverview(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+<<<<<<< Updated upstream
     return this.cooperativesService.getMyDemandOverview(user, Number(days ?? 30));
+=======
+    const cooperatives = await this.cooperativesService.listMine(user);
+    if (!cooperatives[0]) {
+      throw new Error('Cooperative is not available');
+    }
+    return this.cooperativesService.getDemandOverview(user, cooperatives[0].id, Number(days ?? 30));
+>>>>>>> Stashed changes
   }
 
   @Get('me/demand/by-skill')
   async getMyDemandBySkill(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+<<<<<<< Updated upstream
     return this.cooperativesService.getMyDemandBySkill(user, Number(days ?? 30));
+=======
+    const cooperatives = await this.cooperativesService.listMine(user);
+    if (!cooperatives[0]) {
+      throw new Error('Cooperative is not available');
+    }
+    return this.cooperativesService.getDemandBySkill(user, cooperatives[0].id, Number(days ?? 30));
+>>>>>>> Stashed changes
   }
 
   @Get('me/demand/trends')
   async getMyDemandTrends(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+<<<<<<< Updated upstream
     return this.cooperativesService.getMyDemandTrends(user, Number(days ?? 30));
+=======
+    const cooperatives = await this.cooperativesService.listMine(user);
+    if (!cooperatives[0]) {
+      throw new Error('Cooperative is not available');
+    }
+    return this.cooperativesService.getDemandTrends(user, cooperatives[0].id, Number(days ?? 30));
+>>>>>>> Stashed changes
   }
 
   @Get('me/demand/forecast')
   async getMyDemandForecast(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+<<<<<<< Updated upstream
     return this.cooperativesService.getMyDemandForecast(user, Number(days ?? 30));
+=======
+    const cooperatives = await this.cooperativesService.listMine(user);
+    if (!cooperatives[0]) {
+      throw new Error('Cooperative is not available');
+    }
+    return this.cooperativesService.getDemandForecast(user, cooperatives[0].id, Number(days ?? 30));
+>>>>>>> Stashed changes
   }
 
   @Get('me/demand/capacity')
   async getMyDemandCapacity(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+<<<<<<< Updated upstream
     return this.cooperativesService.getMyDemandCapacity(user, Number(days ?? 30));
   }
 
@@ -51,6 +84,22 @@ export class CooperativesController {
     @Query('days') days?: string,
   ) {
     return this.cooperativesService.getMyDemandRecommendations(user, Number(days ?? 30));
+=======
+    const cooperatives = await this.cooperativesService.listMine(user);
+    if (!cooperatives[0]) {
+      throw new Error('Cooperative is not available');
+    }
+    return this.cooperativesService.getDemandCapacity(user, cooperatives[0].id, Number(days ?? 30));
+  }
+
+  @Get('me/demand/recommendations')
+  async getMyDemandRecommendations(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+    const cooperatives = await this.cooperativesService.listMine(user);
+    if (!cooperatives[0]) {
+      throw new Error('Cooperative is not available');
+    }
+    return this.cooperativesService.getDemandRecommendations(user, cooperatives[0].id, Number(days ?? 30));
+>>>>>>> Stashed changes
   }
 
   @Get(':cooperativeId')
@@ -94,7 +143,11 @@ export class CooperativesController {
 
   @Get(':cooperativeId/demand/forecast')
   @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+<<<<<<< Updated upstream
   async getDemandForecast(
+=======
+  async getForecast(
+>>>>>>> Stashed changes
     @CurrentUser() user: AuthenticatedUser,
     @Param('cooperativeId') cooperativeId: string,
     @Query('days') days?: string,
@@ -104,7 +157,11 @@ export class CooperativesController {
 
   @Get(':cooperativeId/demand/capacity')
   @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+<<<<<<< Updated upstream
   async getDemandCapacity(
+=======
+  async getCapacity(
+>>>>>>> Stashed changes
     @CurrentUser() user: AuthenticatedUser,
     @Param('cooperativeId') cooperativeId: string,
     @Query('days') days?: string,
@@ -114,7 +171,11 @@ export class CooperativesController {
 
   @Get(':cooperativeId/demand/recommendations')
   @RequireCooperativeScope({ scope: 'admin', param: 'cooperativeId' })
+<<<<<<< Updated upstream
   async getDemandRecommendations(
+=======
+  async getRecommendations(
+>>>>>>> Stashed changes
     @CurrentUser() user: AuthenticatedUser,
     @Param('cooperativeId') cooperativeId: string,
     @Query('days') days?: string,
